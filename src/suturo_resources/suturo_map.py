@@ -1,4 +1,7 @@
+import numpy as np
+from PIL.ImageOps import scale
 from semantic_digital_twin.world import World
+from semantic_digital_twin.world_description.degree_of_freedom import DegreeOfFreedom
 from semantic_digital_twin.world_description.geometry import Box, Scale, Sphere, Cylinder, FileMesh, Color
 from semantic_digital_twin.adapters.viz_marker import VizMarkerPublisher
 import threading
@@ -6,9 +9,20 @@ import rclpy
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.spatial_types.spatial_types import TransformationMatrix
 from semantic_digital_twin.world_description.world_entity import Body
-from semantic_digital_twin.world_description.connections import Connection6DoF, FixedConnection
+from semantic_digital_twin.world_description.connections import Connection6DoF, FixedConnection, RevoluteConnection
 from semantic_digital_twin.world_description.geometry import Box, Scale, Color
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
+from semantic_digital_twin.spatial_types.spatial_types import Vector3
+
+from semantic_digital_twin.semantic_annotations.factories import (
+    DrawerFactory,
+    ContainerFactory,
+    HandleFactory,
+    Direction,
+    SemanticPositionDescription,
+    HorizontalSemanticDirection,
+    VerticalSemanticDirection, DoorFactory, DresserFactory,
+)
 
 
 white = Color(1, 1, 1)
@@ -156,14 +170,52 @@ def build_environment_furniture(world: World):
     all_elements_connections = []
     root = world.root
 
-    refrigerator = Box(scale=Scale(0.60, 0.658, 1.49), color=white)
-    shape_geometry = ShapeCollection([refrigerator])
-    refrigerator_body = Body(name=PrefixedName("refrigerator_body"), collision=shape_geometry, visual=shape_geometry)
-    all_elements_bodies.append(refrigerator_body)
+    # refrigerator = Box(scale=Scale(0.60, 0.658, 1.49), color=white)
+    # shape_geometry = ShapeCollection([refrigerator])
+    # refrigerator_body = Body(name=PrefixedName("refrigerator_body"), collision=shape_geometry, visual=shape_geometry)
+    # all_elements_bodies.append(refrigerator_body)
+    #
+    # root_C_fridge = FixedConnection(parent=root, child=refrigerator_body,
+    #                                 parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=0.537, y=-2.181, z=0.745))
+    # all_elements_connections.append(root_C_fridge)
 
-    root_C_fridge = FixedConnection(parent=root, child=refrigerator_body,
-                                    parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=0.537, y=-2.181, z=0.745))
-    all_elements_connections.append(root_C_fridge)
+
+    refrigerator_container = ContainerFactory(name=PrefixedName("refrigerator_container"),
+                                                    scale=Scale(x=0.60, y=0.60, z=1.49))
+    refrigerator_drawer = DrawerFactory(name=PrefixedName("refrigerator_drawer"), container_factory=ContainerFactory(name=PrefixedName("container"), direction=Direction.Z, scale=Scale(0.60, 0.60, 0.49),),
+                                        handle_factory=HandleFactory(name=PrefixedName("refrigerator_drawer_handle"), scale=Scale(0.07, 0.505, 0.02)),
+                                        parent_T_handle = TransformationMatrix.from_xyz_rpy(x=0.37, y=0, z=0.20))
+
+    refrigerator_door = DoorFactory(name=PrefixedName("refrigerator_door"), scale=Scale(x=0.02, y=0.6, z=1.00),
+                                    handle_factory=HandleFactory(name=PrefixedName("refrigerator_door_handle"), scale=Scale(0.07, 0.505, 0.02)),
+                                    parent_T_handle=TransformationMatrix.from_xyz_rpy(x=0, y=-0.1, z=0, roll=np.pi/2))
+
+
+
+
+
+    refrigerator_world = DresserFactory(name=PrefixedName("refrigerator"),
+                                                container_factory=refrigerator_container,
+                                                door_factories=[refrigerator_door],
+                                                door_transforms= [TransformationMatrix.from_xyz_rpy(x=0.30, y=0, z=0.25)],
+                                                drawers_factories=[refrigerator_drawer],
+                                                parent_T_drawers = [TransformationMatrix.from_xyz_rpy(x=0.3,z=-0.5)]).create()
+
+    root_C_refrigerator = FixedConnection(parent=root, child=refrigerator_world.root,
+                                          parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=0.537, y=-2.181, z=0.745, yaw=np.pi/2))
+
+
+
+    with world.modify_world():
+        world.merge_world(refrigerator_world, root_C_refrigerator)
+
+    #print(world.get_semantic_annotation_by_name("refrigerator_door"))
+    that_connection = world.get_body_by_name("refrigerator_door").parent_connection.parent.parent_connection
+    print(that_connection.name, that_connection.child.name)
+
+    that_connection.position =  np.pi/8
+
+
 
     counterTop = Box(scale=Scale(2.044, 0.658, 0.545), color=wood)
     shape_geometry = ShapeCollection([counterTop])
@@ -210,14 +262,24 @@ def build_environment_furniture(world: World):
                                         parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.22, y=2.22, z=0.22))
     all_elements_connections.append(root_C_lowerTable)
 
-    cabinet = Box(scale=Scale(0.43, 0.80, 2.02), color=white)
-    shape_geometry = ShapeCollection([cabinet])
-    cabinet_body = Body(name=PrefixedName("cabinet_body"), collision=shape_geometry, visual=shape_geometry)
-    all_elements_bodies.append(cabinet_body)
+    # cabinet = Box(scale=Scale(0.43, 0.80, 2.02), color=white)
+    # shape_geometry = ShapeCollection([cabinet])
+    # cabinet_body = Body(name=PrefixedName("cabinet_body"), collision=shape_geometry, visual=shape_geometry)
+    # all_elements_bodies.append(cabinet_body)
+    #
+    # root_C_cabinet = FixedConnection(parent=root, child=cabinet_body,
+    #                                  parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72, z=1.01))
+    # all_elements_connections.append(root_C_cabinet)
 
-    root_C_cabinet = FixedConnection(parent=root, child=cabinet_body,
-                                     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72, z=1.01))
-    all_elements_connections.append(root_C_cabinet)
+    container_world = ContainerFactory(name=PrefixedName("drawer_container"),
+                                       scale=Scale(x=0.43, y=0.8, z=2.02)).create()
+
+    root_C_cabinet = FixedConnection(parent=world.root, child=container_world.root,
+                                     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
+                                                                                                      z=1.01,
+                                                                                                      yaw=np.pi))
+    with world.modify_world():
+        world.merge_world(container_world, root_C_cabinet)
 
     desk = Box(scale=Scale(0.60, 1.20, 0.75), color=white)
     shape_geometry = ShapeCollection([desk])
@@ -267,6 +329,16 @@ class Publisher:
 
 
 def published(world: World):
+    # container_world = ContainerFactory(name=PrefixedName("drawer_container"),
+    #                                    scale=Scale(x=0.43, y=0.8, z=2.02)).create()
+    #
+    # root_C_cabinet = FixedConnection(parent=world.root, child=container_world.root,
+    #                                  parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
+    #                                                                                                   z=1.01,
+    #                                                                                                   yaw=np.pi))
+    # with world.modify_world():
+    #     world.merge_world(container_world, root_C_cabinet)
+
     rclpy.init()
     node = rclpy.create_node("semantic_digital_twin")
     thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
