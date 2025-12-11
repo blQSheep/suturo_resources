@@ -5,14 +5,17 @@ from suturo_resources.queries import query_kitchen_area, query_living_room_area,
 from suturo_resources.suturo_map import load_environment
 
 def test_load_environment_returns_world():
+    """
+    Tests that loading the environment returns a World object with the correct root name.
+    """
     world = load_environment()
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root_slam")
 
 
-def test_areas():   #TODO needs to be fixed
+def test_areas():
     """
-    Checks that key room areas can be queried and have valid center and pose.
+    Checks that room areas gives x, y, z coordinate each.
     """
     world = load_environment()
 
@@ -24,7 +27,5 @@ def test_areas():   #TODO needs to be fixed
         ("office", query_office_area),
     ]
 
-    for area_name, query_func in area_queries:
-        center, pose = query_func(world)
-        assert center is not None, f"{area_name} center should not be None"
-        assert pose is not None, f"{area_name} pose should not be None"
+    for place, query in area_queries:
+        assert len(query(world)) == 3
