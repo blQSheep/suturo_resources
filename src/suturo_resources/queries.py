@@ -11,7 +11,7 @@ def query_kitchen_area(world):
     body = let(type_=Region, domain=world.regions)
     query = an(entity(body, contains(body.name.name, "kitchen")))
     kitchen_room_area = list(query.evaluate())[0]
-    return kitchen_room_area.combined_mesh.center_mass, kitchen_room_area.global_pose
+    return [float(kitchen_room_area.global_pose.x.to_np()[0]), float(kitchen_room_area.global_pose.y.to_np()[0]), float(kitchen_room_area.global_pose.z.to_np()[0])]
 
 def query_living_room_area(world):
     """
@@ -21,7 +21,7 @@ def query_living_room_area(world):
     body = let(type_=Region, domain=world.regions)
     query = an(entity(body, contains(body.name.name, "living_room")))
     living_room_area = list(query.evaluate())[0]
-    return living_room_area.combined_mesh.center_mass, living_room_area.global_pose
+    return [float(living_room_area.global_pose.x.to_np()[0]), float(living_room_area.global_pose.y.to_np()[0]), float(living_room_area.global_pose.z.to_np()[0])]
 
 def query_bed_room_area(world):
     """
@@ -31,7 +31,7 @@ def query_bed_room_area(world):
     body = let(type_=Region, domain=world.regions)
     query = an(entity(body, contains(body.name.name, "bed_room")))
     bed_room_area = list(query.evaluate())[0]
-    return bed_room_area.combined_mesh.center_mass, bed_room_area.global_pose
+    return [float(bed_room_area.global_pose.x.to_np()[0]), float(bed_room_area.global_pose.y.to_np()[0]), float(bed_room_area.global_pose.z.to_np()[0])]
 
 def query_office_area(world):
     """
@@ -41,4 +41,4 @@ def query_office_area(world):
     body = let(type_=Region, domain=world.regions)
     query = an(entity(body, contains(body.name.name, "office")))
     office_area = list(query.evaluate())[0]
-    return office_area.combined_mesh.center_mass, office_area.global_pose
+    return [float(office_area.global_pose.x.to_np()[0]), float(office_area.global_pose.y.to_np()[0]), float(office_area.global_pose.z.to_np()[0])]
