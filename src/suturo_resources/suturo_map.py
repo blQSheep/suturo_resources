@@ -24,6 +24,7 @@ from semantic_digital_twin.semantic_annotations.factories import (
     VerticalSemanticDirection, DoorFactory, DresserFactory, DoubleDoorFactory,
 )
 
+from myfactories import TableFactory
 
 white = Color(1, 1, 1)
 red = Color(1, 0, 0)
@@ -262,17 +263,35 @@ def build_environment_furniture(world: World):
                                         parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.22, y=2.22, z=0.22))
     all_elements_connections.append(root_C_lowerTable)
 
+
     # cabinet = Box(scale=Scale(0.43, 0.80, 2.02), color=white)
     # shape_geometry = ShapeCollection([cabinet])
     # cabinet_body = Body(name=PrefixedName("cabinet_body"), collision=shape_geometry, visual=shape_geometry)
     # all_elements_bodies.append(cabinet_body)
     #
     # root_C_cabinet = FixedConnection(parent=root, child=cabinet_body,
-    #                                  parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72, z=1.01))
+    #                                  parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
+    #                                                                                                    z=1,#x=4.65, y=3, z=1.01))
+    #                                                                                                   ))
     # all_elements_connections.append(root_C_cabinet)
 
+    upper_container_world = ContainerFactory(name=PrefixedName("drawer_container"),
+                                       scale=Scale(x=0.43, y=0.8, z=1.09)).create()
+
+    upper_shelf_shape = Box(scale=Scale(0.43, 0.8, 0.02), color=white)
+    upper_shelf_body = Body(
+        name=PrefixedName("upper_shelf"),
+        visual=ShapeCollection([upper_shelf_shape]),
+        collision=ShapeCollection([upper_shelf_shape]),
+    )
+
+    upper_container_T_upper_shelf =TransformationMatrix.from_xyz_rpy(
+        z=0.02,
+        reference_frame=Body(ShapeCollection([upper_shelf_shape])),
+    )
+
     cabinet_container = ContainerFactory(name=PrefixedName("cabinet_container"),
-                                       scale=Scale(x=0.43, y=0.8, z=2.02))
+                                       scale=Scale(x=0.43, y=0.8, z=0.97)) # volle höhe z=2.02
 
     cabinet_left_door = DoorFactory(name=PrefixedName("cabinet_left_door"), scale=Scale(x=0.02, y=0.395, z=0.97), # Tiefe, Breite, Höhe
                                     handle_factory=HandleFactory(name=PrefixedName("cabinet_left_door_handle"), scale=Scale(0.07, 0.2, 0.02)),
@@ -292,18 +311,23 @@ def build_environment_furniture(world: World):
                                    #door_factories=[cabinet_double_door],
                                    door_factories= [cabinet_left_door, cabinet_right_door],
                                    drawers_factories=[],
-                                   door_transforms=[TransformationMatrix.from_xyz_rpy(x=0.225, y=-0.2, z=-0.35, roll=0),
-                                                    TransformationMatrix.from_xyz_rpy(x=0.225, y=0.2, z=-0.35)]).create()
+                                   door_transforms=[TransformationMatrix.from_xyz_rpy(x=0.225, y=-0.2, z=0, roll=0), #z=-0.35
+                                                    TransformationMatrix.from_xyz_rpy(x=0.225, y=0.2, z=0)]).create() #z=-0.35
 
     root_C_cabinet = FixedConnection(parent=root, child=cabinet_world.root,
                                      parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
-                                                                                                      z=1.01,
+                                                                                                      z=0.5,
                                                                                                       yaw=np.pi))
     with world.modify_world():
         world.merge_world(cabinet_world, root_C_cabinet)
 
+    with world.modify_world():
+        world.merge_world_at_pose(upper_container_world, TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72, z=1.5, yaw=np.pi, reference_frame=cabinet_world.root))
+
+
+
     cabinet_door_left_connection = world.get_body_by_name("cabinet_left_door").parent_connection.parent.parent_connection
-    cabinet_door_left_connection.position=0
+    cabinet_door_left_connection.position= 0 # np.pi / 2
 
     cabinet_door_right_connection = world.get_body_by_name(
         "cabinet_right_door").parent_connection.parent.parent_connection
@@ -328,22 +352,111 @@ def build_environment_furniture(world: World):
     all_elements_connections.append(root_C_cookingTable)
 
 
-    diningTable = Box(scale=Scale(0.73, 1.18, 0.73),color=wood)
-    shape_geometry = ShapeCollection([diningTable])
-    diningTable_body = Body(name=PrefixedName("diningTable_body"), collision=shape_geometry, visual=shape_geometry)
-    all_elements_bodies.append(diningTable_body)
+    # diningTable = Box(scale=Scale(0.73, 1.18, 0.02),color=wood)
+    # shape_geometry = ShapeCollection([diningTable])
+    # diningTable_body = Body(name=PrefixedName("diningTable_body"), collision=shape_geometry, visual=shape_geometry)
+    # all_elements_bodies.append(diningTable_body)
+    #
+    # root_C_diningTable = FixedConnection(parent=root,child=diningTable_body,
+    #                                      parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=2.59975, y=5.705, z=0.72)) # z=0.365
+    # all_elements_connections.append(root_C_diningTable)
+    #
+    # diningTable_leg_1 = Box(scale=Scale(0.02, 0.02, 0.73), color=wood)
+    # shape_geometry = ShapeCollection([diningTable_leg_1])
+    # diningTable_leg_1_body = Body(name=PrefixedName("diningTable_leg_1"), collision=shape_geometry, visual=shape_geometry)
+    # all_elements_bodies.append(diningTable_leg_1_body)
+    # root_C_diningTable_leg_1 = FixedConnection(parent=root,child=diningTable_leg_1_body,
+    #                                            parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=2.25, y=5.125, z=0.35))
+    # all_elements_connections.append(root_C_diningTable_leg_1)
+    #
+    # diningTable_leg_2 = Box(scale=Scale(0.02, 0.02, 0.73), color=wood)
+    # shape_geometry = ShapeCollection([diningTable_leg_2])
+    # diningTable_leg_2_body = Body(name=PrefixedName("diningTable_leg_2"),
+    #                               collision=shape_geometry,
+    #                               visual=shape_geometry)
+    # all_elements_bodies.append(diningTable_leg_2_body)
+    #
+    # root_C_diningTable_leg_2 = FixedConnection(
+    #     parent=root,
+    #     child=diningTable_leg_2_body,
+    #     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(
+    #         x=2.25, y=6.28, z=0.35
+    #     ),
+    # )
+    # all_elements_connections.append(root_C_diningTable_leg_2)
+    #
+    # # leg 3
+    # diningTable_leg_3 = Box(scale=Scale(0.02, 0.02, 0.73), color=wood)
+    # shape_geometry = ShapeCollection([diningTable_leg_3])
+    # diningTable_leg_3_body = Body(
+    #     name=PrefixedName("diningTable_leg_3"),
+    #     collision=shape_geometry,
+    #     visual=shape_geometry
+    # )
+    # all_elements_bodies.append(diningTable_leg_3_body)
+    #
+    # root_C_diningTable_leg_3 = FixedConnection(
+    #     parent=root,
+    #     child=diningTable_leg_3_body,
+    #     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(
+    #         x=2.95, y=5.125, z=0.35
+    #     ),
+    # )
+    # all_elements_connections.append(root_C_diningTable_leg_3)
+    #
+    # # leg 4
+    # diningTable_leg_4 = Box(scale=Scale(0.02, 0.02, 0.73), color=wood)
+    # shape_geometry = ShapeCollection([diningTable_leg_4])
+    # diningTable_leg_4_body = Body(
+    #     name=PrefixedName("diningTable_leg_4"),
+    #     collision=shape_geometry,
+    #     visual=shape_geometry
+    # )
+    # all_elements_bodies.append(diningTable_leg_4_body)
+    #
+    # root_C_diningTable_leg_4 = FixedConnection(
+    #     parent=root,
+    #     child=diningTable_leg_4_body,
+    #     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(
+    #         x=2.95, y=6.28, z=0.35
+    #     ),
+    # )
+    # all_elements_connections.append(root_C_diningTable_leg_4)
+    #
+    # with world.modify_world():
+    #     for body in all_elements_bodies:
+    #         world.add_body(body)
+    #
+    #     for conn in all_elements_connections:
+    #         world.add_connection(conn)
+    #     return world
 
-    root_C_diningTable = FixedConnection(parent=root,child=diningTable_body,
-                                         parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=2.59975, y=5.705, z=0.365))
-    all_elements_connections.append(root_C_diningTable)
+    dining_table_factory = TableFactory(
+        name=PrefixedName("diningTable", root.name.prefix),
+        top_scale=Scale(0.73, 1.18, 0.02),
+        parent_T_top=TransformationMatrix.from_xyz_rpy(
+            x=2.59975, y=5.705, z=0.72
+        ),
+        leg_positions=(
+            (2.25, 5.125, 0.35),
+            (2.25, 6.28, 0.35),
+            (2.95, 5.125, 0.35),
+            (2.95, 6.28, 0.35),
+        ),
+    )
+
+    dining_table_world = dining_table_factory.create()
+
+    root_C_dining_table = FixedConnection(
+        parent=root,
+        child=dining_table_world.root,
+        parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(
+            x=0.0, y=0.0, z=0.0
+        ),
+    )
 
     with world.modify_world():
-        for body in all_elements_bodies:
-            world.add_body(body)
-
-        for conn in all_elements_connections:
-            world.add_connection(conn)
-        return world
+        world.merge_world(dining_table_world, root_C_dining_table)
 
 class Publisher:
     def __init__(self, name):
