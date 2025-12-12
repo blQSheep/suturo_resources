@@ -98,3 +98,12 @@ rcutils_reset_error() should be called after error handling to avoid this.
 <<<
 
 ```
+**Loading World**
+* clone suturo_resources from https://github.com/SUTURO/suturo_resources
+* install suturo_resources using your cram environment in the suturo_resources folder by executing: 
+* pip install -e .
+* in the desired file import the following "from suturo_resources.suturo_map import load_environment"
+* write: world = load_environment()
+
+* start rviz and add a MarkerArray topic
+* change topic name to : /semworld/viz_marker
