@@ -49,8 +49,6 @@ def query_trash_can_location(world):
     Returns the x, y, z coordinates of the trash can's global pose.
     """
     body = world.get_body_by_name("trash_can_body")
-
-    #return [float(body.visual.shapes.]
     return [
         float(body.global_pose.x.to_np()[0]),
         float(body.global_pose.y.to_np()[0]),
