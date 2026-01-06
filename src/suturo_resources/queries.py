@@ -2,8 +2,6 @@ from krrood.entity_query_language.entity import let, entity, contains
 from krrood.entity_query_language.quantify_entity import an
 from semantic_digital_twin.world_description.world_entity import Region
 
-from suturo_resources.suturo_map import load_environment
-
 
 def query_kitchen_area(world):
     """
@@ -58,5 +56,3 @@ def query_trash_can_location(world):
         float(body.global_pose.y.to_np()[0]),
         2.1*float(body.global_pose.z.to_np()[0]),
     ]
-
-print(query_trash_can_location(load_environment()))
