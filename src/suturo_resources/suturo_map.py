@@ -326,17 +326,3 @@ class Publisher:
 
     def publish(self, world):
         viz = VizMarkerPublisher(world=world, node=self.node)
-
-
-def published(world: World):
-    """
-    Initializes ROS2 node and starts publishing the environment's visual representation for visualization in RViz.
-    Runs in a separate thread, enabling real-time visualization.
-    """
-    rclpy.init()
-    node = rclpy.create_node("semantic_digital_twin")
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-    thread.start()
-
-publisher = Publisher("semantic_digital_twin")
-publisher.publish(load_environment())
