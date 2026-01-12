@@ -7,7 +7,7 @@ from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.spatial_types.spatial_types import HomogeneousTransformationMatrix, Point3
 from semantic_digital_twin.world_description.world_entity import Body
 from semantic_digital_twin.world_description.connections import FixedConnection
-from semantic_digital_twin.world_description.geometry import Box, Scale, Color
+from semantic_digital_twin.world_description.geometry import Box, Scale, Color, Sphere
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
 
 from semantic_digital_twin.semantic_annotations.factories import (RoomFactory)
@@ -249,6 +249,22 @@ def build_environment_furniture(world: World):
     root_C_diningTable = FixedConnection(parent=root,child=diningTable_body,
                                          parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.59975, y=5.705, z=0.365))
     all_elements_connections.append(root_C_diningTable)
+
+    milk = Box(scale=Scale(0.10, 0.10, 0.20), color=red)
+    shape_geometry = ShapeCollection([milk])
+    milk_body = Body(name=PrefixedName("milk_body"), collision=shape_geometry, visual=shape_geometry)
+
+    root_C_milk = FixedConnection(parent=table_body, child=milk_body,
+                                  parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=0.2, y=0, z=0.6))
+    all_elements_connections.append(root_C_milk)
+
+    apple = Sphere(radius=0.10, color=red)
+    shape_geometry = ShapeCollection([apple])
+    apple_body = Body(name=PrefixedName("apple_body"), collision=shape_geometry, visual=shape_geometry)
+
+    root_C_apple = FixedConnection(parent=root, child=apple_body,
+                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.60, y=0.4, z=1))
+    all_elements_connections.append(root_C_apple)
 
     kitchen_floor = [
         Point3(0,0,0),

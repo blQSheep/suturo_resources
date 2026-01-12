@@ -2,13 +2,16 @@ from semantic_digital_twin.world import World
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 
 from suturo_resources.queries import query_kitchen_area, query_living_room_area, query_bed_room_area, query_office_area
-from suturo_resources.suturo_map import load_environment
+from suturo_resources.suturo_map import load_environment, Publisher
+
 
 def test_load_environment_returns_world():
     """
     Tests that loading the environment returns a World object with the correct root name.
     """
     world = load_environment()
+    publisher = Publisher("semantic_digital_twin")
+    publisher.publish(world)
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root_slam")
 
