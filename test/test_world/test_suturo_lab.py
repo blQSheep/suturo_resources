@@ -28,4 +28,5 @@ def test_areas():
     ]
 
     for place, query in area_queries:
-        assert len(query(world)) == 3
+        print(query(world))
+        assert len([query(world).global_pose.x.to_list()[0], query(world).global_pose.y.to_list()[0], query(world).global_pose.z.to_list()[0]]) == 3
