@@ -137,12 +137,12 @@ def bodies_above_body(main_body: Body, world: World) -> List[Body]:
 #             print(f"Collision between {b.name} and table: {tcd.check_collision_between_bodies(b, table)}")
 
 
-def test_above():
-    world = load_environment()
-    table = world.get_body_by_name("table_body")
-    counter_top = world.get_body_by_name("counterTop_body")
-    print(is_supported_by(world.get_body_by_name("milk_body"), table, max_intersection_height=0.1))
-    #print(bodies_above_body(table, world))
+# def test_above():
+#     world = load_environment()
+#     table = world.get_body_by_name("table_body")
+#     counter_top = world.get_body_by_name("counterTop_body")
+#     print(is_supported_by(world.get_body_by_name("milk_body"), table, max_intersection_height=0.1))
+#     #print(bodies_above_body(table, world))
 
 
 def bodies_above_body1(main_body: Body, world:World) -> List[Body]:
@@ -160,22 +160,35 @@ def bodies_above_body1(main_body: Body, world:World) -> List[Body]:
         if is_supported_by(body, main_body, max_intersection_height=0.1):
             result.append(body)
     return result
-print(bodies_above_body1(query_table(load_environment()), load_environment()))
+#print(bodies_above_body1(query_table(load_environment()), load_environment()))
 
 
 
 
-# def closest_body_to_me(target_body: Body, bodies: [Body], world: World):
-#     target_pose = target_body.global_pose(target_body).translation
-#
-#     bodies = world.bodies
-#     smallest = target_pose - world.get_global_pose(bodies[0]).translation
-#     closest_body = world.get_global_pose(bodies[0])
-#
-#     for body in bodies:
-#         if target_pose - world.get_global_pose(body).translation < smallest:
-#             smallest = target_pose - world.get_global_pose(body).translation
-#             closest_body = body
-#
-#     return closest_body
-# print(closest_body_to_me(query_trash(load_environment()), load_environment().bodies, load_environment()))
+def closest_body_to_me(toyas_body: Body, bodies: [Body], world: World) -> Body:
+    toyas_pose_x, toyas_pose_y = toyas_body.global_pose.x, toyas_body.global_pose.y
+
+    # Load environment's bodies
+    bodies = []
+    for body in load_environment().bodies:
+        if body.name.name == "banana_body":
+            continue
+        bodies.append(body)
+
+    # Initialize with the first body's position
+    smallest_x = abs(toyas_pose_x - bodies[0].global_pose.x)
+    smallest_y = abs(toyas_pose_y - bodies[0].global_pose.y)
+    closest_body = bodies[0]
+
+    for body in bodies:
+        diff_x = abs(toyas_pose_x - body.global_pose.x)
+        diff_y = abs(toyas_pose_y - body.global_pose.y)
+
+        if (diff_x + diff_y) < (smallest_x + smallest_y):
+            smallest_x = diff_x
+            smallest_y = diff_y
+            closest_body = body
+
+    return closest_body
+
+print(closest_body_to_me(load_environment().get_body_by_name("banana_body"), load_environment().bodies, load_environment()))
