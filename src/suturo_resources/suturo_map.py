@@ -14,6 +14,7 @@ from semantic_digital_twin.world_description.connections import FixedConnection
 from semantic_digital_twin.world_description.connections import Connection6DoF, FixedConnection, RevoluteConnection
 from semantic_digital_twin.world_description.geometry import Box, Scale, Color
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
+from semantic_digital_twin.semantic_annotations.semantic_annotations import Container, Dresser
 from semantic_digital_twin.spatial_types.spatial_types import Vector3
 
 from semantic_digital_twin.semantic_annotations.factories import (
@@ -26,7 +27,7 @@ from semantic_digital_twin.semantic_annotations.factories import (
     VerticalSemanticDirection, DoorFactory, DresserFactory, DoubleDoorFactory,
 )
 
-from myfactories import TableFactory
+from suturo_resources.myfactories import TableFactory
 from semantic_digital_twin.semantic_annotations.factories import (RoomFactory)
 
 
@@ -226,68 +227,115 @@ def build_environment_furniture(world: World):
     all_elements_connections.append(root_C_lowerTable)
 
 
-    # cabinet = Box(scale=Scale(0.43, 0.80, 2.02), color=white)
-    # shape_geometry = ShapeCollection([cabinet])
-    # cabinet_body = Body(name=PrefixedName("cabinet_body"), collision=shape_geometry, visual=shape_geometry)
-    # all_elements_bodies.append(cabinet_body)
-    #
-    # root_C_cabinet = FixedConnection(parent=root, child=cabinet_body,
-    #                                  parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
-    #                                                                                                    z=1,#x=4.65, y=3, z=1.01))
-    #                                                                                                   ))
-    # all_elements_connections.append(root_C_cabinet)
+    # upper_shelf_shape = Box(scale=Scale(0.43, 0.8, 0.02), color=white)
+    # upper_shelf_body = Body(
+    #     name=PrefixedName("upper_shelf"),
+    #     visual=ShapeCollection([upper_shelf_shape]),
+    #     collision=ShapeCollection([upper_shelf_shape]),
+    # )
 
-    upper_container_world = ContainerFactory(name=PrefixedName("drawer_container"),
-                                       scale=Scale(x=0.43, y=0.8, z=1.09)).create()
+    # ===== CABINET + UPPER CONTAINER (STABIL) =====
 
-    upper_shelf_shape = Box(scale=Scale(0.43, 0.8, 0.02), color=white)
-    upper_shelf_body = Body(
-        name=PrefixedName("upper_shelf"),
-        visual=ShapeCollection([upper_shelf_shape]),
-        collision=ShapeCollection([upper_shelf_shape]),
+    upper_container = ContainerFactory(
+        name=PrefixedName("drawer_container"),
+        scale=Scale(x=0.43, y=0.8, z=1.09),
+    )
+    upper_container_world = upper_container.create()
+
+    cabinet_container = ContainerFactory(
+        name=PrefixedName("cabinet_container"),
+        scale=Scale(x=0.43, y=0.8, z=0.97),
     )
 
-    upper_container_T_upper_shelf =TransformationMatrix.from_xyz_rpy(
-        z=0.02,
-        reference_frame=Body(ShapeCollection([upper_shelf_shape])),
+    cabinet_left_door = DoorFactory(
+        name=PrefixedName("cabinet_left_door"),
+        scale=Scale(x=0.02, y=0.395, z=0.97),
+        handle_factory=HandleFactory(
+            name=PrefixedName("cabinet_left_door_handle"),
+            scale=Scale(0.07, 0.2, 0.02),
+        ),
+        parent_T_handle=TransformationMatrix.from_xyz_rpy(x=0, y=0.1, z=0, roll=np.pi / 2),
     )
 
-    cabinet_container = ContainerFactory(name=PrefixedName("cabinet_container"),
-                                       scale=Scale(x=0.43, y=0.8, z=0.97)) # volle höhe z=2.02
+    cabinet_right_door = DoorFactory(
+        name=PrefixedName("cabinet_right_door"),
+        scale=Scale(x=0.02, y=0.395, z=0.97),
+        handle_factory=HandleFactory(
+            name=PrefixedName("cabinet_right_door_handle"),
+            scale=Scale(0.07, 0.2, 0.02),
+        ),
+        parent_T_handle=TransformationMatrix.from_xyz_rpy(x=0, y=0, z=0, roll=np.pi / 2),
+    )
 
-    cabinet_left_door = DoorFactory(name=PrefixedName("cabinet_left_door"), scale=Scale(x=0.02, y=0.395, z=0.97), # Tiefe, Breite, Höhe
-                                    handle_factory=HandleFactory(name=PrefixedName("cabinet_left_door_handle"), scale=Scale(0.07, 0.2, 0.02)),
-                                    parent_T_handle=TransformationMatrix.from_xyz_rpy(x=0, y=0.1, z=0, roll=np.pi/2))
+    cabinet_world = DresserFactory(
+        name=PrefixedName("cabinet"),
+        container_factory=cabinet_container,
+        door_factories=[cabinet_left_door, cabinet_right_door],
+        drawers_factories=[],
+        door_transforms=[
+            TransformationMatrix.from_xyz_rpy(x=0.225, y=-0.2, z=0, roll=0),
+            TransformationMatrix.from_xyz_rpy(x=0.225, y=0.2, z=0, roll=0),
+        ],
+    ).create()
 
-    cabinet_right_door = DoorFactory(name=PrefixedName("cabinet_right_door"), scale=Scale(x=0.02, y=0.395, z=0.97),
-                                    handle_factory=HandleFactory(name=PrefixedName("cabinet_right_door_handle"), scale=Scale(0.07, 0.2, 0.02)),
-                                    parent_T_handle=TransformationMatrix.from_xyz_rpy(x=0, y=0, z=0, roll=np.pi/2))
+    # Cabinet an Root hängen
+    root_C_cabinet = FixedConnection(
+        parent=root,
+        child=cabinet_world.root,
+        parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(
+            x=4.65, y=4.72, z=0.5, yaw=np.pi
+        ),
+    )
 
-    cabinet_double_door = DoubleDoorFactory(name=PrefixedName("cabinet_double_door"),
-                                            door_factories=[cabinet_left_door, cabinet_right_door],
-                                            door_transforms=[TransformationMatrix.from_xyz_rpy(x=0, y=-0.1, z=-0.1, roll=0),
-                                                             TransformationMatrix.from_xyz_rpy(x=0, y=-0.3, z=-0.1, roll=0)])
-
-    cabinet_world = DresserFactory(name=PrefixedName("cabinet"),
-                                   container_factory=cabinet_container,
-                                   #door_factories=[cabinet_double_door],
-                                   door_factories= [cabinet_left_door, cabinet_right_door],
-                                   drawers_factories=[],
-                                   door_transforms=[TransformationMatrix.from_xyz_rpy(x=0.225, y=-0.2, z=0, roll=0), #z=-0.35
-                                                    TransformationMatrix.from_xyz_rpy(x=0.225, y=0.2, z=0)]).create() #z=-0.35
-
-    root_C_cabinet = FixedConnection(parent=root, child=cabinet_world.root,
-                                     parent_T_connection_expression=TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72,
-                                                                                                      z=0.5,
-                                                                                                      yaw=np.pi))
     with world.modify_world():
         world.merge_world(cabinet_world, root_C_cabinet)
 
+    # Upper Container oben drauf via FixedConnection
+    cabinet_container_body = world.get_semantic_annotations_by_type(Dresser)[0].container.body
+
+    upper_T_on_cabinet = TransformationMatrix.from_xyz_rpy(
+        x=0.0,
+        y=0.0,
+        z=(0.97 / 2) + (1.09 / 2),  # Cabinet-Höhe/2 + Upper-Höhe/2 = 1.48
+        yaw=0.0,
+    )
+
+    root_C_upper = FixedConnection(
+        parent=cabinet_container_body,
+        child=upper_container_world.root,
+        parent_T_connection_expression=upper_T_on_cabinet,
+    )
+
     with world.modify_world():
-        world.merge_world_at_pose(upper_container_world, TransformationMatrix.from_xyz_rpy(x=4.65, y=4.72, z=1.5, yaw=np.pi, reference_frame=cabinet_world.root))
+        world.merge_world(upper_container_world, root_C_upper)
 
+    # ===== SHELF (Regal) im Cabinet =====
 
+    # Regal Container (ein einfacher leerer Container als Regal-Body)
+    shelf_container = ContainerFactory(
+        name=PrefixedName("shelf_container"),
+        scale=Scale(x=0.40, y=0.75, z=0.02),  # Dünn wie ein Regal (2cm)
+    )
+    shelf_world = shelf_container.create()
+    # Regal an Cabinet-Container anhängen
+    # 105cm vom Boden = 1.05m
+    # Cabinet-Container Origin ist in der Mitte (0.97/2 = 0.485m)
+    # Also: 1.05 - 0.485 = 0.565m relativ zur Mitte
+    shelf_T_on_cabinet = TransformationMatrix.from_xyz_rpy(
+        x=0.0,
+        y=0.0,
+        z=0.075,  # .056m absolute - 0.485m (halbe Cabinet-Höhe)
+        yaw=0.0,
+    )
 
+    root_C_shelf = FixedConnection(
+        parent=cabinet_container_body,
+        child=shelf_world.root,
+        parent_T_connection_expression=shelf_T_on_cabinet,
+    )
+
+    with world.modify_world():
+        world.merge_world(shelf_world, root_C_shelf)
     cabinet_door_left_connection = world.get_body_by_name("cabinet_left_door").parent_connection.parent.parent_connection
     cabinet_door_left_connection.position= 0 # np.pi / 2
 
