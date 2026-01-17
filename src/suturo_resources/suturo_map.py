@@ -15,6 +15,7 @@ from semantic_digital_twin.semantic_annotations.factories import (RoomFactory)
 
 white = Color(1, 1, 1)
 red = Color(1, 0, 0)
+blue = Color(0, 0, 1)
 black = Color(0, 0, 0)
 gray = Color(0.74, 0.74, 0.74)
 wood = Color(1, 0.827, 0.6078)
@@ -164,7 +165,7 @@ def build_environment_furniture(world: World):
     trash_can_body = Body(name=PrefixedName("trash_can_body"), collision=shape_geometry, visual=shape_geometry)
 
     root_C_trash_can = FixedConnection(parent=root, child=trash_can_body,
-                                       parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.5, y=-0.25, z=0.20)) #x=4.5, y=-0.25
+                                       parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.416, y=5.5, z=0.20)) #x=0.5, y=5.5, z=0.20
     all_elements_connections.append(root_C_trash_can)
 
     refrigerator = Box(scale=Scale(0.60, 0.658, 1.49), color=white)
@@ -279,6 +280,20 @@ def build_environment_furniture(world: World):
     root_C_cup = FixedConnection(parent=root, child=cup_body,
                                    parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.859,y=-2.181, z=0.5725))
     all_elements_connections.append(root_C_cup)
+
+    chips_red = Cylinder(width=0.07, height=0.10, color=red)
+    shape_geometry = ShapeCollection([chips_red])
+    chips_red_body = Body(name=PrefixedName("chips_red_body"), collision=shape_geometry, visual=shape_geometry)
+    root_C_chips_red = FixedConnection(parent=root, child=chips_red_body,
+                                parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.9,y=5.85, z=0.725))
+    all_elements_connections.append(root_C_chips_red)
+
+    chips_blue = Cylinder(width=0.07, height=0.10, color=blue)
+    shape_geometry = ShapeCollection([chips_blue])
+    chips_blue_body = Body(name=PrefixedName("chips_blue_body"), collision=shape_geometry, visual=shape_geometry)
+    root_C_chips_blue = FixedConnection(parent=root, child=chips_blue_body,
+                                parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=0.9, y=5.85, z=0.725))
+    all_elements_connections.append(root_C_chips_blue)
 
 #-----------------------------------------------------------------------#
     kitchen_floor = [

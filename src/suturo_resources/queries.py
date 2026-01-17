@@ -55,7 +55,7 @@ def get_next_object(supporting_surface):
     sorted_objects = sorted(obj_distance.items(), key=lambda item: item[1])
     return sorted_objects
 
-print(get_next_object(load_environment().get_body_by_name("table_body")))
+print(get_next_object(load_environment().get_body_by_name("cookingTable_body")))
 
 
 # def assign_distance_to_object(obj, pov):
