@@ -1,4 +1,7 @@
-from suturo_resources.queries import query_region_area
+from semantic_digital_twin.semantic_annotations.semantic_annotations import Apple, Milk, Table, Carrot, Bread, Tomato, \
+    TunaCan
+
+from suturo_resources.queries import query_region_area, query_most_similar_obj
 from suturo_resources.suturo_map import load_environment, Publisher
 
 
@@ -27,6 +30,15 @@ def test_areas():
         print(query(world, area))
         assert len([query(world, area).global_pose.x.to_list()[0], query(world, area).global_pose.y.to_list()[0],
                     query(world, area).global_pose.z.to_list()[0]]) == 3
+
+
+def test_most_simular_obj():
+    lop = [Milk, Table, Carrot, Bread]
+
+    assert query_most_similar_obj(Apple, lop) == Carrot
+    assert query_most_similar_obj(Tomato, lop) == Carrot
+    assert query_most_similar_obj(TunaCan, lop) == Milk
+    assert query_most_similar_obj(Table, lop) == Table
 
 
 #

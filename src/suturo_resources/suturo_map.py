@@ -1,3 +1,6 @@
+import numpy as np
+from semantic_digital_twin.semantic_annotations.semantic_annotations import Dresser, Milk, Apple, Orange, Carrot, \
+    Lettuce
 from semantic_digital_twin.world import World
 from semantic_digital_twin.world_description.geometry import Cylinder, Sphere
 from semantic_digital_twin.adapters.viz_marker import VizMarkerPublisher
@@ -10,12 +13,16 @@ from semantic_digital_twin.world_description.connections import FixedConnection
 from semantic_digital_twin.world_description.geometry import Box, Scale, Color
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
 
-from semantic_digital_twin.semantic_annotations.factories import (RoomFactory)
+from semantic_digital_twin.semantic_annotations.factories import (RoomFactory, ContainerFactory, DoorFactory,
+                                                                  HandleFactory, DresserFactory)
 
 
 white = Color(1, 1, 1)
 red = Color(1, 0, 0)
 blue = Color(0, 0, 1)
+orangeC = Color(1, 0.647, 0)
+yellow = Color(1, 1, 0)
+green = Color(0, 1, 0)
 black = Color(0, 0, 0)
 gray = Color(0.74, 0.74, 0.74)
 wood = Color(1, 0.827, 0.6078)
@@ -225,6 +232,116 @@ def build_environment_furniture(world: World):
                                      parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.8, y=4.72, z=1.01))
     all_elements_connections.append(root_C_cabinet)
 
+    # ===== CABINET + UPPER CONTAINER (STABIL) ===== Alim
+    #
+    # upper_container = ContainerFactory(
+    #     name=PrefixedName("drawer_container"),
+    #     scale=Scale(x=0.43, y=0.8, z=1.09),
+    # )
+    # upper_container_world = upper_container.create()
+    #
+    # cabinet_container = ContainerFactory(
+    #     name=PrefixedName("cabinet_container"),
+    #     scale=Scale(x=0.43, y=0.8, z=0.97),
+    # )
+    #
+    # cabinet_left_door = DoorFactory(
+    #     name=PrefixedName("cabinet_left_door"),
+    #     scale=Scale(x=0.02, y=0.395, z=0.97),
+    #     handle_factory=HandleFactory(
+    #         name=PrefixedName("cabinet_left_door_handle"),
+    #         scale=Scale(0.07, 0.2, 0.02),
+    #     ),
+    #     parent_T_handle=HomogeneousTransformationMatrix.from_xyz_rpy(x=0, y=0.1, z=0, roll=np.pi / 2),
+    # )
+    #
+    # cabinet_right_door = DoorFactory(
+    #     name=PrefixedName("cabinet_right_door"),
+    #     scale=Scale(x=0.02, y=0.395, z=0.97),
+    #     handle_factory=HandleFactory(
+    #         name=PrefixedName("cabinet_right_door_handle"),
+    #         scale=Scale(0.07, 0.2, 0.02),
+    #     ),
+    #     parent_T_handle=HomogeneousTransformationMatrix.from_xyz_rpy(x=0, y=0, z=0, roll=np.pi / 2),
+    # )
+    #
+    # cabinet_world = DresserFactory(
+    #     name=PrefixedName("cabinet"),
+    #     container_factory=cabinet_container,
+    #     door_factories=[cabinet_left_door, cabinet_right_door],
+    #     drawers_factories=[],
+    #     door_transforms=[
+    #         HomogeneousTransformationMatrix.from_xyz_rpy(x=0.225, y=-0.2, z=0, roll=0),
+    #         HomogeneousTransformationMatrix.from_xyz_rpy(x=0.225, y=0.2, z=0, roll=0),
+    #     ],
+    # ).create()
+    #
+    # # Cabinet an Root hängen
+    # root_C_cabinet = FixedConnection(
+    #     parent=root,
+    #     child=cabinet_world.root,
+    #     parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
+    #         x=4.75, y=4.72, z=0.5, yaw=np.pi
+    #     ),
+    # )
+    #
+    # with world.modify_world():
+    #     world.merge_world(cabinet_world, root_C_cabinet)
+    #
+    # # Upper Container oben drauf via FixedConnection
+    # cabinet_container_body = world.get_semantic_annotations_by_type(Dresser)[0].container.body
+    #
+    # upper_T_on_cabinet = HomogeneousTransformationMatrix.from_xyz_rpy(
+    #     x=0.0,
+    #     y=0.0,
+    #     z=(0.97 / 2) + (1.09 / 2),  # Cabinet-Höhe/2 + Upper-Höhe/2 = 1.48
+    #     yaw=0.0,
+    # )
+    #
+    # root_C_upper = FixedConnection(
+    #     parent=cabinet_container_body,
+    #     child=upper_container_world.root,
+    #     parent_T_connection_expression=upper_T_on_cabinet,
+    # )
+    #
+    # with world.modify_world():
+    #     world.merge_world(upper_container_world, root_C_upper)
+    #
+    # # ===== SHELF (Regal) im Cabinet =====
+    #
+    # # Regal Container (ein einfacher leerer Container als Regal-Body)
+    # shelf_container = ContainerFactory(
+    #     name=PrefixedName("shelf_container"),
+    #     scale=Scale(x=0.40, y=0.75, z=0.02),  # Dünn wie ein Regal (2cm)
+    # )
+    # shelf_world = shelf_container.create()
+    # # Regal an Cabinet-Container anhängen
+    # # 105cm vom Boden = 1.05m
+    # # Cabinet-Container Origin ist in der Mitte (0.97/2 = 0.485m)
+    # # Also: 1.05 - 0.485 = 0.565m relativ zur Mitte
+    # shelf_T_on_cabinet = HomogeneousTransformationMatrix.from_xyz_rpy(
+    #     x=0.0,
+    #     y=0.0,
+    #     z=0.075,  # .056m absolute - 0.485m (halbe Cabinet-Höhe)
+    #     yaw=0.0,
+    # )
+    #
+    # root_C_shelf = FixedConnection(
+    #     parent=cabinet_container_body,
+    #     child=shelf_world.root,
+    #     parent_T_connection_expression=shelf_T_on_cabinet,
+    # )
+    #
+    # with world.modify_world():
+    #     world.merge_world(shelf_world, root_C_shelf)
+    # cabinet_door_left_connection = world.get_body_by_name(
+    #     "cabinet_left_door").parent_connection.parent.parent_connection
+    # cabinet_door_left_connection.position = np.pi / 2  # 0
+    #
+    # cabinet_door_right_connection = world.get_body_by_name(
+    #     "cabinet_right_door").parent_connection.parent.parent_connection
+    # cabinet_door_right_connection.position = np.pi / 2
+
 
     desk = Box(scale=Scale(0.60, 1.20, 0.75), color=white)
     shape_geometry = ShapeCollection([desk])
@@ -251,9 +368,11 @@ def build_environment_furniture(world: World):
                                          parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.59975, y=5.705, z=0.365))
     all_elements_connections.append(root_C_diningTable)
 #%% ToBeDeleted ####################################
-    milk = Box(scale=Scale(0.10, 0.10, 0.20), color=red)
+    milk = Box(scale=Scale(0.10, 0.10, 0.20), color=white)
     shape_geometry = ShapeCollection([milk])
     milk_body = Body(name=PrefixedName("milk_body"), collision=shape_geometry, visual=shape_geometry)
+
+    milk_a = Milk(body=milk_body)
 
     root_C_milk = FixedConnection(parent=root, child=milk_body,
                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.545, y=0.626, z=0.9225))
@@ -267,11 +386,11 @@ def build_environment_furniture(world: World):
                                    parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.545, y=0.426, z=0.9225))
     all_elements_connections.append(root_C_apple)
 
-    banana = Box(scale=Scale(0.20, 0.05, 0.05), color=red)
+    banana = Box(scale=Scale(0.20, 0.05, 0.05), color=yellow)
     shape_geometry = ShapeCollection([banana])
     banana_body = Body(name=PrefixedName("banana_body"), collision=shape_geometry, visual=shape_geometry)
     root_C_banana = FixedConnection(parent=root, child=banana_body,
-                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.245, y=0.426, z=0.85))
+                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.245, y=0.426, z=0.865))
     all_elements_connections.append(root_C_banana)
 
     cup = Cylinder(width=0.07, height=0.10, color=red)
@@ -294,8 +413,39 @@ def build_environment_furniture(world: World):
     root_C_chips_blue = FixedConnection(parent=root, child=chips_blue_body,
                                 parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=0.9, y=5.85, z=0.725))
     all_elements_connections.append(root_C_chips_blue)
+# ------------------------------query-which-Region-to-place-obj-----------------------------------------#
+    apple1 = Sphere(radius=0.10, color=red)
+    shape_geometry = ShapeCollection([apple1])
+    apple1_body = Body(name=PrefixedName("apple1_body"), collision=shape_geometry, visual=shape_geometry)
+    apple1_a = Apple(body=apple1_body)
+    root_C_apple1 = FixedConnection(parent=root, child=apple1_body,
+                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.5, y=6.13, z=0.82))
+    all_elements_connections.append(root_C_apple1)
 
-#-----------------------------------------------------------------------#
+    orange = Sphere(radius=0.10, color=orangeC)
+    shape_geometry = ShapeCollection([orange])
+    orange_body = Body(name=PrefixedName("orange_body"), collision=shape_geometry, visual=shape_geometry)
+    orange_a = Orange(body=orange_body)
+    root_C_orange = FixedConnection(parent=root, child=orange_body,
+                                    parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.5,y=5.85,z=0.82))
+    all_elements_connections.append(root_C_orange)
+
+    carrot = Cylinder(width=0.05, height=0.20, color=orangeC)
+    shape_geometry = ShapeCollection([carrot])
+    carrot_body = Body(name=PrefixedName("carrot_body"), collision=shape_geometry, visual=shape_geometry)
+    carrot_a = Carrot(body=carrot_body)
+    root_C_carrot = FixedConnection(parent=root, child=carrot_body,
+                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.33,y=2.0,z=0.5))
+    all_elements_connections.append(root_C_carrot)
+
+    lettuce = Box(scale=Scale(0.15, 0.15, 0.10), color=green)
+    shape_geometry = ShapeCollection([lettuce])
+    lettuce_body = Body(name=PrefixedName("lettuce_body"), collision=shape_geometry, visual=shape_geometry)
+    lettuce_a = Lettuce(body=lettuce_body)
+    root_C_lettuce = FixedConnection(parent=root, child=lettuce_body,
+                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.33,y=2.3,z=0.475))
+    all_elements_connections.append(root_C_lettuce)
+#-------------------------------------------------------------------------------------------------------#
     kitchen_floor = [
         Point3(0,0,0),
         Point3(0,3.334,0),
@@ -359,6 +509,11 @@ def build_environment_furniture(world: World):
 
 
     with world.modify_world():
+        world.add_semantic_annotation(milk_a)
+        world.add_semantic_annotation(apple1_a)
+        world.add_semantic_annotation(orange_a)
+        world.add_semantic_annotation(carrot_a)
+        world.add_semantic_annotation(lettuce_a)
         for conn in all_elements_connections:
             world.add_connection(conn)
         return world
