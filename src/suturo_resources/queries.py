@@ -6,24 +6,11 @@ from krrood.entity_query_language.entity_result_processors import an
 from krrood.utils import inheritance_path_length, _inheritance_path_length
 from semantic_digital_twin.reasoning.predicates import is_supported_by
 from semantic_digital_twin.semantic_annotations.semantic_annotations import Milk, Apple, Fruit, Produce, Vegetable, \
-    Carrot, Food, Orange, Table, Tomato, Fridge, Banana
+    Carrot, Food, Orange, Table, Tomato, Fridge, Banana, Bread
 
 from semantic_digital_twin.world_description.world_entity import Region, Body, SemanticAnnotation
 
 from suturo_resources.suturo_map import load_environment
-
-
-def query_region_area(world, region: str):
-    """
-    Queries an area from the environment.
-    Returns the center of mass and global pose of a given region.
-    """
-    body = variable(type_=Region, domain=world.regions)
-    query = an(entity(body).where(contains(body.name.name, region)))
-    kitchen_room_area = list(query.evaluate())[0]
-    return kitchen_room_area
-
-
 
 
 def bodies_above_body(main_body: Body) -> List[Body]:
@@ -38,72 +25,73 @@ def bodies_above_body(main_body: Body) -> List[Body]:
         if is_supported_by(body, main_body, max_intersection_height=0.1):
             result.append(body)
     return result
-#print(bodies_above_body(load_environment().get_body_by_name("diningTable_body")))
 
-def get_next_object(supporting_surface):
+
+def query_semantic_annotations_on_surfaces(supporting_surfaces : List[SemanticAnnotation]) -> List[SemanticAnnotation]:
+    """
+    Queries a lis of Semantic annotations on top of a given list of other annotations.
+    """
+    surfaces2 = []
+    for s in supporting_surfaces:
+        surfaces2.append(s.bodies[0])
+    body = variable(Body, domain=surfaces2[0]._world.bodies_with_enabled_collision)
+    results = []
+    result2= []
+    for s in surfaces2:
+        results.append(list(
+            an(entity(body).where(is_supported_by(supported_body=body, supporting_body=s)))
+            .evaluate()
+        ))
+    for r in results:
+        for i in r:
+            result2.append(i._semantic_annotations)
+    return [item for s in result2 for item in s]
+
+
+def query_get_next_object(supporting_surface):
+    #supporting_surface = supporting_surface.bodies[0]
     obj_distance = {}
     toya_x = load_environment().get_body_by_name("trash_can_body").global_pose.x.to_list()[0]
     toya_y = load_environment().get_body_by_name("trash_can_body").global_pose.y.to_list()[0]
-    for obj in bodies_above_body(supporting_surface):
-        dx = abs(obj.global_pose.x - toya_x)
-        dy = abs(obj.global_pose.y - toya_y)
+    bodies = []
+    for obj in query_semantic_annotations_on_surfaces([supporting_surface]):
+        bodies.append(obj.bodies)
+    for obj in bodies:
+        dx = abs(obj[0].global_pose.x - toya_x)
+        dy = abs(obj[0].global_pose.y - toya_y)
         dist_sq = dx + dy
-        obj_distance[obj] = dist_sq
+        obj_distance[obj[0]] = dist_sq
     sorted_objects = sorted(obj_distance.items(), key=lambda item: item[1])
-    return sorted_objects
-
-#print(get_next_object(load_environment().get_body_by_name("diningTable_body")))
-
-
-def bodies_in_regions(areas : [Body]) -> List[List[Body]]:
-    return [bodies_above_body(body) for body in areas]
-
-#print(bodies_in_regions([load_environment().get_body_by_name("lowerTable_body"), load_environment().get_body_by_name("diningTable_body")]))
-
-def query_which_region_to_place_object(handBody: Body, allBodies : List[List[Body]]) -> Body:
-    """
-    Queries which region to place an object in the environment.
-    Returns the region where the object should be placed.
-    """
-    ...
-
-def bodies_in_regions1(areas : [Body]) -> [SemanticAnnotation]:
-    return [bodies_above_body(body) for body in areas]
-
-#print(bodies_in_regions1([load_environment().get_body_by_name("lowerTable_body"), load_environment().get_body_by_name("diningTable_body")]))
-
-
-def bodies_above_bodies(supporters: [Body]) -> [SemanticAnnotation]:
-    result= []
-    bodies= []
-    for connection in supporters[0]._world.connections:
-        if str(connection.parent.name) == "root":
-            bodies.append(connection.child)
-    for supporter in supporters:
-        for body in bodies:
-            if body.combined_mesh == None:
-                continue
-            if is_supported_by(body, supporter, max_intersection_height=0.1):
-                result.append(body)
+    result = []
+    for body in sorted_objects:
+        result.append(body[0]._semantic_annotations)
     return result
-print (bodies_above_bodies([load_environment().get_body_by_name("lowerTable_body"), load_environment().get_body_by_name("diningTable_body")]))
 
-def query_most_similar_obj(sem : SemanticAnnotation, objekts : [SemanticAnnotation]) -> SemanticAnnotation:
+
+def query_most_similar_obj(sem: SemanticAnnotation,objects: list[SemanticAnnotation]) -> SemanticAnnotation:
     """
-    Queries which region to place an object in the environment.
-    Returns the region where the object should be placed.
+    Returns the most similar object based on inheritance distance.
+    If the minimal inheritance distance is greater than `threshold`,
+    returns `sem`.
     """
-    path_length = math.inf
-    for obj in objekts:
-        long_path = obj.__mro__
-        for path in long_path:
-            if inheritance_path_length(sem, path) == None:
+    if not objects:
+        return sem
+
+    best_distance = math.inf
+    most_similar = None
+
+    for obj in objects:
+        for cls in type(obj).__mro__:
+            dist = inheritance_path_length(type(sem), cls)
+            if dist is None:
                 continue
-            if inheritance_path_length(sem, path) < path_length:
-                path_length = inheritance_path_length(sem, path)
+
+            if dist < best_distance:
+                best_distance = dist
                 most_similar = obj
+
+    # Apply threshold
+    if best_distance > 1 or most_similar is None:
+        return sem
+
     return most_similar
-
-
-#print (query_most_similar_obj(Carrot, [Tomato, Orange, Banana, Table, Fridge]))
-
