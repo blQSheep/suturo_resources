@@ -1,5 +1,7 @@
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.world import World
+
+from conftest import test_load_world
 from suturo_resources.queries import query_most_similar_obj, query_semantic_annotations_on_surfaces, \
     query_get_next_object
 from suturo_resources.suturo_map import load_environment, Publisher
@@ -10,8 +12,8 @@ def test_load_environment_returns_world():
     Tests that loading the environment returns a World object with the correct root name.
     """
     world = load_environment()
-    #publisher = Publisher("semantic_digital_twin")
-    #publisher.publish(world)
+    publisher = Publisher("semantic_digital_twin")
+    publisher.publish(world)
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root_slam")
 
@@ -19,29 +21,31 @@ def test_query_semantic_annotations_on_surfaces():
     """
     Tests that giving Table annotations gives a list of the correct annotation on top.
     """
-    world = load_environment()
-    table1 = world.get_semantic_annotation_by_name("lowerTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("diningTable_annotation")
+    world = test_load_world()
+    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
+    table3 = world.get_semantic_annotation_by_name("emptyTable_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
     carrot = world.get_semantic_annotation_by_name("carrot_annotation")
     orange = world.get_semantic_annotation_by_name("orange_annotation")
     lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
 
-    assert query_semantic_annotations_on_surfaces([table1, table2]) == [carrot, lettuce, apple, orange]
+    assert query_semantic_annotations_on_surfaces([table1, table2]) == [apple, orange, carrot, lettuce]
+    assert query_semantic_annotations_on_surfaces([table3]) == []
 
 def test_query_get_next_object():
     """
     Tests tha query_get_next_object
     :return: an ordered by distance list of Semantic Annotation
     """
-    world = load_environment()
-    table1 = world.get_semantic_annotation_by_name("lowerTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("diningTable_annotation")
+    world = test_load_world()
+    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
 
-    assert query_get_next_object(table1) == [{world.get_semantic_annotation_by_name("lettuce_annotation")},
-                                             {world.get_semantic_annotation_by_name("carrot_annotation")}]
-    assert query_get_next_object(table2) == [{world.get_semantic_annotation_by_name("orange_annotation")},
+    assert query_get_next_object(table1) == [{world.get_semantic_annotation_by_name("orange_annotation")},
                                              {world.get_semantic_annotation_by_name("apple_annotation")}]
+    assert query_get_next_object(table2) == [{world.get_semantic_annotation_by_name("lettuce_annotation")},
+                                             {world.get_semantic_annotation_by_name("carrot_annotation")}]
 
 def test_query_most_similar_obj():
     """
@@ -56,12 +60,14 @@ def test_query_most_similar_obj():
     similar object from a given list. It includes assertions for both matching and
     non-matching cases, along with scenarios where the input list is empty.
     """
-    world = load_environment()
-    table1 = world.get_semantic_annotation_by_name("lowerTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("diningTable_annotation")
+    world = test_load_world()
+    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
+    table3 = world.get_semantic_annotation_by_name("emptyTable_annotation")
     list_of_products_1_2 = query_semantic_annotations_on_surfaces([table1, table2])
-    list_of_products_1 = query_semantic_annotations_on_surfaces([table1]) # has carrot and lettuce
-    list_of_products_2 = query_semantic_annotations_on_surfaces([table2]) # has apple and orange
+    list_of_products_1 = query_semantic_annotations_on_surfaces([table1]) # has apple and orange
+    list_of_products_2 = query_semantic_annotations_on_surfaces([table2]) # has carrot and lettuce
+    list_of_products_3 = query_semantic_annotations_on_surfaces([table3]) # empty
 
     banana = world.get_semantic_annotation_by_name("banana_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
@@ -72,7 +78,7 @@ def test_query_most_similar_obj():
     assert query_most_similar_obj(orange, list_of_products_1_2) == orange
     assert query_most_similar_obj(banana, list_of_products_1_2) == apple
     assert query_most_similar_obj(lettuce, list_of_products_1_2) == lettuce
-    assert query_most_similar_obj(carrot, []) == carrot
-    assert query_most_similar_obj(apple, list_of_products_1) == apple
-    assert query_most_similar_obj(carrot, list_of_products_2) == carrot
+    assert query_most_similar_obj(carrot, list_of_products_3) == carrot
+    assert query_most_similar_obj(apple, list_of_products_2) == apple
+    assert query_most_similar_obj(carrot, list_of_products_1) == carrot
     assert query_most_similar_obj(table1, list_of_products_1_2) == table1

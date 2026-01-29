@@ -59,6 +59,19 @@ def query_get_next_object(supporting_surface):
         result.append(body[0]._semantic_annotations)
     return result
 
+def query_get_next_object_euclidean(supporting_surface):
+    toya_pos = load_environment().get_semantic_annotation_by_name("trash_can_annotation").body.global_pose.to_list()[0]
+    bodies = query_semantic_annotations_on_surfaces([supporting_surface])
+    bodies.sort(key=lambda obj: math.dist(obj.body.global_pose.to_list()[0], toya_pos))
+
+    return bodies
+
+print(query_get_next_object_euclidean(load_environment().get_semantic_annotation_by_name("cookingTable_annotation")))
+
+#print(query_semantic_annotations_on_surfaces([load_environment().get_semantic_annotation_by_name("cookingTable_annotation")]))
+#print(query_get_next_object_euclidean(load_environment().get_semantic_annotation_by_name("cookingTable_annotation")))
+#print(load_environment().get_semantic_annotation_by_name("chips_red_annotation").body.global_pose.to_list()[0])
+#print (math.dist(load_environment().get_body_by_name("chips_red_body").global_pose.to_list()[0],load_environment().get_body_by_name("chips_blue_body").global_pose.to_list()[0]))
 
 def query_most_similar_obj(hand_annotation: SemanticAnnotation,objects: list[SemanticAnnotation]) -> SemanticAnnotation:
     """

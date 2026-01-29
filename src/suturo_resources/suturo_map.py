@@ -1,6 +1,6 @@
 import numpy as np
 from semantic_digital_twin.semantic_annotations.semantic_annotations import Dresser, Milk, Apple, Orange, Carrot, \
-    Lettuce, Table, Banana, Sofa
+    Lettuce, Table, Banana, Sofa, Pringles, TrashCan
 from semantic_digital_twin.world import World
 from semantic_digital_twin.world_description.geometry import Cylinder, Sphere
 from semantic_digital_twin.adapters.viz_marker import VizMarkerPublisher
@@ -165,14 +165,17 @@ def build_environment_furniture(world: World):
     Returns the updated World object with furniture integrated.
     """
     all_elements_connections = []
+    all_elements_annotations = []
     root = world.get_body_by_name("root")
 
     trash_can = Cylinder(width=0.30, height=0.40, color=black)
     shape_geometry = ShapeCollection([trash_can])
     trash_can_body = Body(name=PrefixedName("trash_can_body"), collision=shape_geometry, visual=shape_geometry)
+    trash_can_annotation = TrashCan(body=trash_can_body, name=PrefixedName("trash_can_annotation"))
+    all_elements_annotations.append(trash_can_annotation)
 
     root_C_trash_can = FixedConnection(parent=root, child=trash_can_body,
-                                       parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.416, y=5.5, z=0.20)) #x=0.5, y=5.5, z=0.20
+                                       parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=0.416, y=5.5, z=0.20)) #x=0.5, y=5.5, z=0.20
     all_elements_connections.append(root_C_trash_can)
 
     refrigerator = Box(scale=Scale(0.60, 0.658, 1.49), color=white)
@@ -203,6 +206,8 @@ def build_environment_furniture(world: World):
     table = Box(scale=Scale(2.45, 0.796, 0.845), color=white)
     shape_geometry = ShapeCollection([table])
     table_body = Body(name=PrefixedName("table_body"), collision=shape_geometry, visual=shape_geometry)
+    table_annotation = Table(body=table_body, name=PrefixedName("table_annotation"))
+    all_elements_annotations.append(table_annotation)
 
     root_C_table = FixedConnection(parent=root, child=table_body,
                                    parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.545, y=0.426, z=0.4225))
@@ -212,6 +217,7 @@ def build_environment_furniture(world: World):
     shape_geometry = ShapeCollection([sofa])
     sofa_body = Body(name=PrefixedName("sofa_body"), collision=shape_geometry, visual=shape_geometry)
     sofa_annotation = Sofa(body=sofa_body, name=PrefixedName("sofa_annotation"))
+    all_elements_annotations.append(sofa_annotation)
 
     root_C_sofa = FixedConnection(parent=root, child=sofa_body,
                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.60, y=1.20, z=0.34))
@@ -221,6 +227,7 @@ def build_environment_furniture(world: World):
     shape_geometry = ShapeCollection([lowerTable])
     lowerTable_body = Body(name=PrefixedName("lowerTable_body"), collision=shape_geometry, visual=shape_geometry)
     lowerTable_annotation = Table(body=lowerTable_body, name=PrefixedName("lowerTable_annotation"))
+    all_elements_annotations.append(lowerTable_annotation)
 
     root_C_lowerTable = FixedConnection(parent=root, child=lowerTable_body,
                                         parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.22, y=2.22, z=0.22))
@@ -356,6 +363,8 @@ def build_environment_furniture(world: World):
     cookingTable = Box(scale=Scale(1.75, 0.64, 0.71),color=wood)
     shape_geometry = ShapeCollection([cookingTable])
     cookingTable_body = Body(name=PrefixedName("cookingTable_body"), collision=shape_geometry, visual=shape_geometry)
+    cookingTable_annotation = Table(body=cookingTable_body, name=PrefixedName("cookingTable_annotation"))
+    all_elements_annotations.append(cookingTable_annotation)
 
     root_C_cookingTable = FixedConnection(parent=root,child=cookingTable_body,
                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.325, y=5.99, z=0.355))
@@ -366,6 +375,7 @@ def build_environment_furniture(world: World):
     shape_geometry = ShapeCollection([diningTable])
     diningTable_body = Body(name=PrefixedName("diningTable_body"), collision=shape_geometry, visual=shape_geometry)
     diningTable_annotation = Table(body=diningTable_body, name=PrefixedName("diningTable_annotation"))
+    all_elements_annotations.append(diningTable_annotation)
 
     root_C_diningTable = FixedConnection(parent=root,child=diningTable_body,
                                          parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.59975, y=5.705, z=0.365))
@@ -376,18 +386,11 @@ def build_environment_furniture(world: World):
     milk_body = Body(name=PrefixedName("milk_body"), collision=shape_geometry, visual=shape_geometry)
 
     milk_annotation = Milk(body=milk_body, name=PrefixedName("milk_annotation"))
-
+    all_elements_annotations.append(milk_annotation)
     root_C_milk = FixedConnection(parent=root, child=milk_body,
                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.545, y=0.626, z=0.9225))
     all_elements_connections.append(root_C_milk)
 
-    banana = Box(scale=Scale(0.20, 0.05, 0.05), color=yellow)
-    shape_geometry = ShapeCollection([banana])
-    banana_body = Body(name=PrefixedName("banana_body"), collision=shape_geometry, visual=shape_geometry)
-    banana_annotation = Banana(body=banana_body, name=PrefixedName("banana_annotation"))
-    root_C_banana = FixedConnection(parent=root, child=banana_body,
-                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=3.245, y=0.426, z=0.865))
-    all_elements_connections.append(root_C_banana)
 
     cup = Cylinder(width=0.07, height=0.10, color=red)
     shape_geometry = ShapeCollection([cup])
@@ -399,6 +402,8 @@ def build_environment_furniture(world: World):
     chips_red = Cylinder(width=0.07, height=0.10, color=red)
     shape_geometry = ShapeCollection([chips_red])
     chips_red_body = Body(name=PrefixedName("chips_red_body"), collision=shape_geometry, visual=shape_geometry)
+    chips_red_annotation = Pringles(body=chips_red_body, name=PrefixedName("chips_red_annotation"))
+    all_elements_annotations.append(chips_red_annotation)
     root_C_chips_red = FixedConnection(parent=root, child=chips_red_body,
                                 parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=1.9,y=5.85, z=0.725))
     all_elements_connections.append(root_C_chips_red)
@@ -406,41 +411,13 @@ def build_environment_furniture(world: World):
     chips_blue = Cylinder(width=0.07, height=0.10, color=blue)
     shape_geometry = ShapeCollection([chips_blue])
     chips_blue_body = Body(name=PrefixedName("chips_blue_body"), collision=shape_geometry, visual=shape_geometry)
+    chips_blue_annotation = Pringles(body=chips_blue_body, name=PrefixedName("chips_blue_annotation"))
+    all_elements_annotations.append(chips_blue_annotation)
     root_C_chips_blue = FixedConnection(parent=root, child=chips_blue_body,
                                 parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=0.9, y=5.85, z=0.725))
     all_elements_connections.append(root_C_chips_blue)
 # ------------------------------query-which-Region-to-place-obj-----------------------------------------#
-    apple = Sphere(radius=0.10, color=red)
-    shape_geometry = ShapeCollection([apple])
-    apple_body = Body(name=PrefixedName("apple_body"), collision=shape_geometry, visual=shape_geometry)
-    apple_annotation = Apple(body=apple_body, name=PrefixedName("apple_annotation"))
-    root_C_apple = FixedConnection(parent=root, child=apple_body,
-                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.5, y=6.13, z=0.82))
-    all_elements_connections.append(root_C_apple)
 
-    orange = Sphere(radius=0.10, color=orangeC)
-    shape_geometry = ShapeCollection([orange])
-    orange_body = Body(name=PrefixedName("orange_body"), collision=shape_geometry, visual=shape_geometry)
-    orange_annotation = Orange(body=orange_body, name=PrefixedName("orange_annotation"))
-    root_C_orange = FixedConnection(parent=root, child=orange_body,
-                                    parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=2.5,y=5.85,z=0.82))
-    all_elements_connections.append(root_C_orange)
-
-    carrot = Cylinder(width=0.05, height=0.20, color=orangeC)
-    shape_geometry = ShapeCollection([carrot])
-    carrot_body = Body(name=PrefixedName("carrot_body"), collision=shape_geometry, visual=shape_geometry)
-    carrot_annotation = Carrot(body=carrot_body, name=PrefixedName("carrot_annotation"))
-    root_C_carrot = FixedConnection(parent=root, child=carrot_body,
-                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.33,y=2.0,z=0.5))
-    all_elements_connections.append(root_C_carrot)
-
-    lettuce = Box(scale=Scale(0.15, 0.15, 0.10), color=green)
-    shape_geometry = ShapeCollection([lettuce])
-    lettuce_body = Body(name=PrefixedName("lettuce_body"), collision=shape_geometry, visual=shape_geometry)
-    lettuce_annotation = Lettuce(body=lettuce_body, name=PrefixedName("lettuce_annotation"))
-    root_C_lettuce = FixedConnection(parent=root, child=lettuce_body,
-                                   parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(x=4.33,y=2.3,z=0.475))
-    all_elements_connections.append(root_C_lettuce)
 #-------------------------------------------------------------------------------------------------------#
     kitchen_floor = [
         Point3(0,0,0),
@@ -505,15 +482,8 @@ def build_environment_furniture(world: World):
 
 
     with world.modify_world():
-        world.add_semantic_annotation(milk_annotation)
-        world.add_semantic_annotation(apple_annotation)
-        world.add_semantic_annotation(orange_annotation)
-        world.add_semantic_annotation(carrot_annotation)
-        world.add_semantic_annotation(lettuce_annotation)
-        world.add_semantic_annotation(diningTable_annotation)
-        world.add_semantic_annotation(lowerTable_annotation)
-        world.add_semantic_annotation(banana_annotation)
-        world.add_semantic_annotation(sofa_annotation)
+        for annotation in all_elements_annotations:
+            world.add_semantic_annotation(annotation)
         for conn in all_elements_connections:
             world.add_connection(conn)
         return world
