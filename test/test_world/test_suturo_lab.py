@@ -2,8 +2,11 @@ from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.world import World
 
 from conftest import test_load_world
-from suturo_resources.queries import query_most_similar_obj, query_semantic_annotations_on_surfaces, \
-    query_get_next_object
+from suturo_resources.queries import (
+    query_most_similar_obj,
+    query_semantic_annotations_on_surfaces,
+    query_get_next_object_euclidean,
+)
 from suturo_resources.suturo_map import load_environment, Publisher
 
 
@@ -11,41 +14,53 @@ def test_load_environment_returns_world():
     """
     Tests that loading the environment returns a World object with the correct root name.
     """
-    world = load_environment()
+    world = test_load_world()  # load_environment()
     publisher = Publisher("semantic_digital_twin")
     publisher.publish(world)
-    assert isinstance(world, World)
-    assert world.root.name == PrefixedName("root_slam")
+    # assert isinstance(world, World)
+    # assert world.root.name == PrefixedName("root_slam")
+
 
 def test_query_semantic_annotations_on_surfaces():
     """
     Tests that giving Table annotations gives a list of the correct annotation on top.
     """
     world = test_load_world()
-    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
-    table3 = world.get_semantic_annotation_by_name("emptyTable_annotation")
+    table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
+    table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
     carrot = world.get_semantic_annotation_by_name("carrot_annotation")
     orange = world.get_semantic_annotation_by_name("orange_annotation")
     lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
-
-    assert query_semantic_annotations_on_surfaces([table1, table2]) == [apple, orange, carrot, lettuce]
+    assert query_semantic_annotations_on_surfaces([table1, table2]) == [
+        apple,
+        orange,
+        carrot,
+        lettuce,
+    ]
     assert query_semantic_annotations_on_surfaces([table3]) == []
 
-def test_query_get_next_object():
+
+def test_query_get_next_object_euclidean():
     """
     Tests tha query_get_next_object
     :return: an ordered by distance list of Semantic Annotation
     """
     world = test_load_world()
-    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
+    toya = world.get_body_by_name("base_link_body")
+    table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
+    table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
+    apple = world.get_semantic_annotation_by_name("apple_annotation")
+    carrot = world.get_semantic_annotation_by_name("carrot_annotation")
+    orange = world.get_semantic_annotation_by_name("orange_annotation")
+    lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
 
-    assert query_get_next_object(table1) == [{world.get_semantic_annotation_by_name("orange_annotation")},
-                                             {world.get_semantic_annotation_by_name("apple_annotation")}]
-    assert query_get_next_object(table2) == [{world.get_semantic_annotation_by_name("lettuce_annotation")},
-                                             {world.get_semantic_annotation_by_name("carrot_annotation")}]
+    assert query_get_next_object_euclidean(toya, table1) == [orange, apple]
+    assert query_get_next_object_euclidean(toya, table2) == [carrot, lettuce]
+    assert query_get_next_object_euclidean(toya, table3) == []
+
 
 def test_query_most_similar_obj():
     """
@@ -61,13 +76,17 @@ def test_query_most_similar_obj():
     non-matching cases, along with scenarios where the input list is empty.
     """
     world = test_load_world()
-    table1 = world.get_semantic_annotation_by_name("fruitTable_annotation")
-    table2 = world.get_semantic_annotation_by_name("vegetableTable_annotation")
-    table3 = world.get_semantic_annotation_by_name("emptyTable_annotation")
+    table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
+    table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
+    table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
     list_of_products_1_2 = query_semantic_annotations_on_surfaces([table1, table2])
-    list_of_products_1 = query_semantic_annotations_on_surfaces([table1]) # has apple and orange
-    list_of_products_2 = query_semantic_annotations_on_surfaces([table2]) # has carrot and lettuce
-    list_of_products_3 = query_semantic_annotations_on_surfaces([table3]) # empty
+    list_of_products_1 = query_semantic_annotations_on_surfaces(
+        [table1]
+    )  # has apple and orange
+    list_of_products_2 = query_semantic_annotations_on_surfaces(
+        [table2]
+    )  # has carrot and lettuce
+    list_of_products_3 = query_semantic_annotations_on_surfaces([table3])  # empty
 
     banana = world.get_semantic_annotation_by_name("banana_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")

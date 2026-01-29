@@ -384,7 +384,6 @@ def build_environment_furniture(world: World):
     milk = Box(scale=Scale(0.10, 0.10, 0.20), color=white)
     shape_geometry = ShapeCollection([milk])
     milk_body = Body(name=PrefixedName("milk_body"), collision=shape_geometry, visual=shape_geometry)
-
     milk_annotation = Milk(body=milk_body, name=PrefixedName("milk_annotation"))
     all_elements_annotations.append(milk_annotation)
     root_C_milk = FixedConnection(parent=root, child=milk_body,
