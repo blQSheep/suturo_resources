@@ -19,7 +19,6 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
 from semantic_digital_twin.world import World
 from semantic_digital_twin.world_description.geometry import Cylinder, Sphere
 import threading
-
 import rclpy
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.semantic_annotations.semantic_annotations import Room, Floor
@@ -43,7 +42,6 @@ green = Color(0, 1, 0)
 black = Color(0, 0, 0)
 gray = Color(0.74, 0.74, 0.74)
 wood = Color(1, 0.827, 0.6078)
-
 
 def load_environment():
     """
@@ -69,7 +67,6 @@ def load_environment():
     build_environment_rooms(world)
 
     return world
-
 
 def build_environment_walls(world: World):
     """

@@ -24,7 +24,6 @@ from semantic_digital_twin.world_description.geometry import (
 )
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
 
-
 def test_load_world():
     world = World()
     red = Color(255, 0, 0)
