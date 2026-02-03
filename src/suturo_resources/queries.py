@@ -4,19 +4,11 @@ from krrood.entity_query_language.entity import variable, entity, contains
 from krrood.entity_query_language.entity_result_processors import an
 from krrood.utils import inheritance_path_length
 from semantic_digital_twin.reasoning.predicates import is_supported_by
-from semantic_digital_twin.semantic_annotations.semantic_annotations import (
-    Lettuce,
-    Carrot,
-    Apple,
-    Table,
-)
 
 from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
-
-from conftest import test_load_world
 
 
 def query_semantic_annotations_on_surfaces(

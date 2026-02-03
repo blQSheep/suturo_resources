@@ -1,23 +1,12 @@
-import numpy as np
-
 from semantic_digital_twin.adapters.ros.visualization.viz_marker import (
     VizMarkerPublisher,
 )
 from semantic_digital_twin.semantic_annotations.semantic_annotations import (
-    Dresser,
-    Milk,
-    Apple,
-    Orange,
-    Carrot,
-    Lettuce,
     Table,
-    Banana,
     Sofa,
-    Pringles,
     TrashCan,
 )
 from semantic_digital_twin.world import World
-from semantic_digital_twin.world_description.geometry import Cylinder, Sphere
 import threading
 import rclpy
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
@@ -26,7 +15,6 @@ from semantic_digital_twin.spatial_types.spatial_types import (
     HomogeneousTransformationMatrix,
     Point3,
 )
-from semantic_digital_twin.world_description.world_entity import Body
 from semantic_digital_twin.world_description.connections import FixedConnection
 from semantic_digital_twin.world_description.geometry import Box, Scale, Color
 from semantic_digital_twin.world_description.geometry import Cylinder
@@ -42,6 +30,7 @@ green = Color(0, 1, 0)
 black = Color(0, 0, 0)
 gray = Color(0.74, 0.74, 0.74)
 wood = Color(1, 0.827, 0.6078)
+
 
 def load_environment():
     """
@@ -67,6 +56,7 @@ def load_environment():
     build_environment_rooms(world)
 
     return world
+
 
 def build_environment_walls(world: World):
     """
