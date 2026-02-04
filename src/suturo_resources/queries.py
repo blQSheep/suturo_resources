@@ -16,12 +16,12 @@ def query_semantic_annotations_on_surfaces(
 ) -> List[SemanticAnnotation]:
     """
     Queries a list of Semantic annotations that are on top of a given list of other annotations (ex. Tables).
+    param: supporting_surfaces: List of SemanticAnnotations that are supporting other annotations.
+    return: List of SemanticAnnotations that are supported by the given supporting_surfaces.
     """
     if not supporting_surfaces:
         return []
-    surfaces_bodies = []
-    for surface in supporting_surfaces:
-        surfaces_bodies.append(surface.bodies[0])
+    surfaces_bodies = [surface.bodies[0] for surface in supporting_surfaces]
     body = variable(
         Body, domain=surfaces_bodies[0]._world.bodies_with_enabled_collision
     )
