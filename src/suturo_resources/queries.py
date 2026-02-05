@@ -1,9 +1,16 @@
 import math
-from typing import List
-from krrood.entity_query_language.entity import variable, entity, contains
-from krrood.entity_query_language.entity_result_processors import an
+from typing import List, Union, Iterable
+from krrood.entity_query_language.entity import (
+    entity,
+    variable_from,
+)
+from krrood.entity_query_language.symbolic import QueryObjectDescriptor, Entity
 from krrood.utils import inheritance_path_length
-from semantic_digital_twin.reasoning.predicates import is_supported_by
+from semantic_digital_twin.reasoning.predicates import (
+    is_supported_by,
+    compute_euclidean_distance_2d,
+)
+from semantic_digital_twin.world import World
 
 from semantic_digital_twin.world_description.world_entity import (
     Body,
@@ -12,51 +19,53 @@ from semantic_digital_twin.world_description.world_entity import (
 
 
 def query_semantic_annotations_on_surfaces(
-    supporting_surfaces: List[SemanticAnnotation],
-) -> List[SemanticAnnotation]:
+    supporting_surfaces: List[SemanticAnnotation], world: World
+) -> Union[Entity[SemanticAnnotation], SemanticAnnotation]:
     """
     Queries a list of Semantic annotations that are on top of a given list of other annotations (ex. Tables).
     param: supporting_surfaces: List of SemanticAnnotations that are supporting other annotations.
+    :param world: World object that contains the supporting_surfaces.
     return: List of SemanticAnnotations that are supported by the given supporting_surfaces.
     """
-    if not supporting_surfaces:
-        return []
-    surfaces_bodies = [surface.bodies[0] for surface in supporting_surfaces]
-    body = variable(
-        Body, domain=surfaces_bodies[0]._world.bodies_with_enabled_collision
+    supporting_surfaces_var = variable_from(supporting_surfaces)
+    body_with_enabled_collision = variable_from(world.bodies_with_enabled_collision)
+    semantic_annotations = variable_from(
+        body_with_enabled_collision._semantic_annotations
     )
-    results_bodies = []
-    results_annotations = []
-    for surface in surfaces_bodies:
-        results_bodies.append(
-            list(
-                an(
-                    entity(body).where(
-                        is_supported_by(supported_body=body, supporting_body=surface)
-                    )
-                ).evaluate()
-            )
-        )
-    for result in results_bodies:
-        for i in result:
-            results_annotations.append(i._semantic_annotations)
-    return [item for s in results_annotations for item in s]
-
-
-def query_get_next_object_euclidean_x_y(mainBody: Body, supporting_surface):
-    """
-    Computes and returns a sorted list of annotations based on their Euclidean distance
-    to the position of the given main body. The list includes objects located on
-    the specified supporting surface, ordered by their x and y distance from the main body.
-    """
-    toya_pos = mainBody.global_pose.to_position().to_list()[:2]
-    bodies = query_semantic_annotations_on_surfaces([supporting_surface])
-    bodies.sort(
-        key=lambda obj: math.dist(
-            obj.bodies[0].global_pose.to_position().to_list()[:2], toya_pos
+    semantic_annotations_that_are_supported = entity(semantic_annotations).where(
+        is_supported_by(
+            supported_body=body_with_enabled_collision,
+            supporting_body=supporting_surfaces_var.bodies[0],
         )
     )
-    return bodies
+    return semantic_annotations_that_are_supported
+
+
+def query_get_next_object_euclidean_x_y(
+    main_body: Body,
+    supporting_surface,
+) -> QueryObjectDescriptor[SemanticAnnotation]:
+    """
+    Queries the next object based on Euclidean distance in x and y coordinates
+    relative to the given main body and supporting surface. This function utilizes
+    semantic annotations of objects and orders them by their Euclidean distances
+    to the main body.
+
+    :param main_body: The main body to which the Euclidean distance is computed.
+    :param supporting_surface: The surface on which the semantic annotations
+        of interest are queried.
+    :return: A `QueryObjectDescriptor` containing semantic annotations ordered
+        by Euclidean distance to the main body.
+    """
+    supported_semantic_annotations = query_semantic_annotations_on_surfaces(
+        [supporting_surface], main_body._world
+    )
+    return supported_semantic_annotations.order_by(
+        compute_euclidean_distance_2d(
+            body1=supported_semantic_annotations.selected_variable.bodies[0],
+            body2=main_body,
+        )
+    )
 
 
 def query_most_similar_obj(
@@ -65,9 +74,20 @@ def query_most_similar_obj(
     threshold: int = 1,
 ) -> SemanticAnnotation:
     """
-    Returns the most similar object based on inheritance distance.
-    If the minimal inheritance distance is greater than `threshold`,
-    returns `hand_annotation`.
+    Finds the most similar object from a list of provided objects to a given
+    hand-annotated semantic annotation, based on their inheritance
+    distance within a class hierarchy.
+
+    :param hand_annotation: The semantic annotation that serves as a reference
+        for similarity comparison.
+    :param objects: A list of semantic annotations to compare against the
+        provided hand annotation.
+    :param threshold: The maximum allowable distance for similarity. If the
+        closest object's distance exceeds this threshold, the function
+        defaults to returning the hand annotation. Defaults to 1.
+    :return: A `SemanticAnnotation` object that is the most similar to
+        the given hand annotation, or the original hand annotation if no
+        suitable match is found within the threshold.
     """
     if not objects:
         return hand_annotation

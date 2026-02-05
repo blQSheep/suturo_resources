@@ -31,14 +31,14 @@ def test_query_semantic_annotations_on_surfaces():
     carrot = world.get_semantic_annotation_by_name("carrot_annotation")
     orange = world.get_semantic_annotation_by_name("orange_annotation")
     lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
-    assert query_semantic_annotations_on_surfaces([table1, table2]) == [
+    assert query_semantic_annotations_on_surfaces([table1, table2], world).tolist() == [
         apple,
         orange,
         carrot,
         lettuce,
     ]
-    assert query_semantic_annotations_on_surfaces([table3]) == []
-    assert query_semantic_annotations_on_surfaces([]) == []
+    assert query_semantic_annotations_on_surfaces([table3], world).tolist() == []
+    assert query_semantic_annotations_on_surfaces([], world).tolist() == []
 
 
 def test_query_get_next_object_euclidean_x_y():
@@ -60,9 +60,12 @@ def test_query_get_next_object_euclidean_x_y():
     orange = world.get_semantic_annotation_by_name("orange_annotation")
     lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
 
-    assert query_get_next_object_euclidean_x_y(toya, table1) == [orange, apple]
-    assert query_get_next_object_euclidean_x_y(toya, table2) == [carrot, lettuce]
-    assert query_get_next_object_euclidean_x_y(toya, table3) == []
+    assert query_get_next_object_euclidean_x_y(toya, table1).tolist() == [orange, apple]
+    assert query_get_next_object_euclidean_x_y(toya, table2).tolist() == [
+        carrot,
+        lettuce,
+    ]
+    assert query_get_next_object_euclidean_x_y(toya, table3).tolist() == []
 
 
 def test_query_most_similar_obj():
@@ -82,14 +85,18 @@ def test_query_most_similar_obj():
     table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
     table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
     table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
-    list_of_products_1_2 = query_semantic_annotations_on_surfaces([table1, table2])
+    list_of_products_1_2 = query_semantic_annotations_on_surfaces(
+        [table1, table2], world
+    ).tolist()  # has apple, orange, carrot and lettuce
     list_of_products_1 = query_semantic_annotations_on_surfaces(
-        [table1]
-    )  # has apple and orange
+        [table1], world
+    ).tolist()  # has apple and orange
     list_of_products_2 = query_semantic_annotations_on_surfaces(
-        [table2]
-    )  # has carrot and lettuce
-    list_of_products_3 = query_semantic_annotations_on_surfaces([table3])  # empty
+        [table2], world
+    ).tolist()  # has carrot and lettuce
+    list_of_products_3 = query_semantic_annotations_on_surfaces(
+        [table3], world
+    ).tolist()  # empty
 
     banana = world.get_semantic_annotation_by_name("banana_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
