@@ -1,3 +1,4 @@
+from semantic_digital_twin.adapters.ros.tf_publisher import TFPublisher
 from semantic_digital_twin.adapters.ros.visualization.viz_marker import (
     VizMarkerPublisher,
 )
@@ -499,6 +500,8 @@ def build_environment_rooms(world: World):
 
     room_annotations = []
 
+    root_slam_T_root = world.get_body_by_name("root").parent_connection.origin
+
     with world.modify_world():
         kitchen_floor_polytope = [
             Point3(0, 0, 0),
@@ -532,9 +535,8 @@ def build_environment_rooms(world: World):
             name=PrefixedName("kitchen_floor"),
             world=world,
             floor_polytope=kitchen_floor_polytope,
-            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=2.317, y=-0.843
-            ),
+            world_root_T_self=root_slam_T_root
+            @ HomogeneousTransformationMatrix.from_xyz_rpy(x=2.317, y=-0.843),
         )
         kitchen = Room(floor=kitchen_floor, name=PrefixedName("kitchen"))
         room_annotations.append(kitchen)
@@ -543,9 +545,8 @@ def build_environment_rooms(world: World):
             name=PrefixedName("living_room_floor"),
             world=world,
             floor_polytope=living_room_floor_polytope,
-            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=2.317, y=2.3095
-            ),
+            world_root_T_self=root_slam_T_root
+            @ HomogeneousTransformationMatrix.from_xyz_rpy(x=2.317, y=2.3095),
         )
         living_room = Room(floor=living_room_floor, name=PrefixedName("living_room"))
         room_annotations.append(living_room)
@@ -554,9 +555,8 @@ def build_environment_rooms(world: World):
             name=PrefixedName("bed_room_floor"),
             world=world,
             floor_polytope=bed_room_floor_polytope,
-            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=0.96, y=4.96
-            ),
+            world_root_T_self=root_slam_T_root
+            @ HomogeneousTransformationMatrix.from_xyz_rpy(x=0.96, y=4.96),
         )
         bed_room = Room(floor=bed_room_floor, name=PrefixedName("bed_room"))
         room_annotations.append(bed_room)
@@ -565,9 +565,8 @@ def build_environment_rooms(world: World):
             name=PrefixedName("office_floor"),
             world=world,
             floor_polytope=office_floor_polytope,
-            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=3.56, y=4.96
-            ),
+            world_root_T_self=root_slam_T_root
+            @ HomogeneousTransformationMatrix.from_xyz_rpy(x=3.56, y=4.96),
         )
         office = Room(floor=office_floor, name=PrefixedName("office"))
         room_annotations.append(office)
@@ -587,4 +586,5 @@ class Publisher:
         self.thread.start()
 
     def publish(self, world):
+        tf_publisher = TFPublisher(world=world, node=self.node)
         viz = VizMarkerPublisher(world=world, node=self.node)
