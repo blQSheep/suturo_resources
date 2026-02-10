@@ -1,3 +1,4 @@
+import numpy as np
 from geometry_msgs.msg import Vector3
 from semantic_digital_twin.adapters.ros.tf_publisher import TFPublisher
 from semantic_digital_twin.adapters.ros.visualization.viz_marker import (
@@ -8,6 +9,9 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
     Sofa,
     TrashCan,
     Dishwasher,
+    Door,
+    Hinge,
+    Handle,
 )
 from semantic_digital_twin.world import World
 import threading
@@ -345,16 +349,6 @@ def build_environment_furniture(world: World):
     )
     all_elements_connections.append(root_C_counterTop)
 
-    #!#
-    dishwasher_F = Dishwasher.create_with_new_body_in_world(
-        name=PrefixedName("dishwasher"),
-        world=world,
-        world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=1),
-        scale=Scale(0.60, 0.658, 1.49),
-    )
-
-    all_elements_connections.append(dishwasher_F.root_C)
-
     ovenArea = Box(scale=Scale(1.20, 0.658, 1.49), color=white)
     shape_geometry = ShapeCollection([ovenArea])
     ovenArea_body = Body(
@@ -500,6 +494,43 @@ def build_environment_furniture(world: World):
         ),
     )
     all_elements_connections.append(root_C_diningTable)
+
+    with world.modify_world():
+        dishwasher = Dishwasher.create_with_new_body_in_world(
+            name=PrefixedName("dishwasher"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1, z=1
+            ),
+            scale=Scale(0.59, 0.658, 0.72),
+        )
+        dishwasher_door = Door.create_with_new_body_in_world(
+            name=PrefixedName("dishwasher_door"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1.329, z=1, yaw=np.pi / 2  # , pitch=np.pi / 2
+            ),
+            scale=Scale(0.05, 0.60, 0.72),
+        )
+        dishwasher_door_handle = Handle.create_with_new_body_in_world(
+            name=PrefixedName("dishwasher_door_handle"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1.355, z=1.3155, yaw=np.pi / 2
+            ),
+            scale=Scale(0.065, 0.55, 0.015),
+        )
+        dishwasher_door_hinge = Hinge.create_with_new_body_in_world(
+            name=PrefixedName("dishwasher_door_hinge"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1.329, z=0.28, yaw=np.pi / 2
+            ),
+        )
+
+        dishwasher_door.add_hinge(dishwasher_door_hinge)
+        dishwasher_door.add_handle(dishwasher_door_handle)
+        dishwasher.add_door(dishwasher_door)
 
     with world.modify_world():
         for conn in all_elements_connections:
