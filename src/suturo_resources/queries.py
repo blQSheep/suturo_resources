@@ -1,5 +1,5 @@
 import math
-from typing import List, Union, Iterable
+from typing import List, Union
 from krrood.entity_query_language.entity import (
     entity,
     variable_from,
