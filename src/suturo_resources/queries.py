@@ -9,6 +9,7 @@ from krrood.utils import inheritance_path_length
 from semantic_digital_twin.reasoning.predicates import (
     is_supported_by,
     compute_euclidean_distance_2d,
+    is_supporting,
 )
 from semantic_digital_twin.world import World
 
@@ -16,6 +17,8 @@ from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
+
+from conftest import test_load_world
 
 
 def query_semantic_annotations_on_surfaces(
@@ -111,3 +114,61 @@ def query_most_similar_obj(
     if best_distance > threshold or most_similar is None:
         return hand_annotation
     return most_similar
+
+
+world1 = test_load_world()
+banana = world1.get_semantic_annotation_by_name("banana_annotation")
+apple = world1.get_semantic_annotation_by_name("apple_annotation")
+carrot = world1.get_semantic_annotation_by_name("carrot_annotation")
+orange = world1.get_semantic_annotation_by_name("orange_annotation")
+lettuce = world1.get_semantic_annotation_by_name("lettuce_annotation")
+table1 = world1.get_semantic_annotation_by_name("fruit_table_annotation")
+table2 = world1.get_semantic_annotation_by_name("vegetable_table_annotation")
+table3 = world1.get_semantic_annotation_by_name("empty_table_annotation")
+
+
+def most_similar_ob_eql(
+    hand_annotation: SemanticAnnotation,
+    tables: List[SemanticAnnotation],
+    world: World,
+    threshold: int = 1,
+) -> SemanticAnnotation:
+
+    if not tables:
+        return hand_annotation
+    for table in tables:
+        if is_supporting(table.bodies[0], world):
+            continue
+        else:
+            emptay_table = table
+
+    best_distance = math.inf
+    most_similar = None
+    counter = 0
+    objects = query_semantic_annotations_on_surfaces(tables, world).tolist()
+    for object in objects:
+        for cls in type(object).__mro__:
+            dist = inheritance_path_length(type(hand_annotation), cls)
+            if dist is None:
+                counter = counter + 1
+                continue
+
+            if counter < best_distance:
+                best_distance = counter
+                most_similar = object
+                break
+        counter = 0
+    # Apply threshold
+    if best_distance > threshold or most_similar is None:
+        return emptay_table
+    return most_similar
+
+
+print(most_similar_ob_eql(banana, [table3, table2], world1))
+
+# print(query_semantic_annotations_on_surfaces([table1, table2], world1).tolist()[0])
+
+# print(is_supported_by(apple.bodies[0], table2.bodies[0]))
+
+
+# print(is_supporting(table3.bodies[0], world1))
