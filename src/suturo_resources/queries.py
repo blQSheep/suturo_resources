@@ -6,6 +6,7 @@ from krrood.entity_query_language.entity import (
 )
 from krrood.entity_query_language.symbolic import QueryObjectDescriptor, Entity
 from krrood.utils import inheritance_path_length
+from semantic_digital_twin.exceptions import IncorrectParameterScaleError
 from semantic_digital_twin.reasoning.predicates import (
     is_supported_by,
     compute_euclidean_distance_2d,
@@ -17,8 +18,6 @@ from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
-
-from conftest import test_load_world
 
 
 def query_semantic_annotations_on_surfaces(
@@ -73,102 +72,57 @@ def query_get_next_object_euclidean_x_y(
 
 def query_most_similar_obj(
     hand_annotation: SemanticAnnotation,
-    objects: List[SemanticAnnotation],
-    threshold: int = 1,
-) -> SemanticAnnotation:
-    """
-    Finds the most similar object from a list of provided objects to a given
-    hand-annotated semantic annotation, based on their inheritance
-    distance within a class hierarchy.
-
-    :param hand_annotation: The semantic annotation that serves as a reference
-        for similarity comparison.
-    :param objects: A list of semantic annotations to compare against the
-        provided hand annotation.
-    :param threshold: The maximum allowable distance for similarity. If the
-        closest object's distance exceeds this threshold, the function
-        defaults to returning the hand annotation. Defaults to 1.
-    :return: A `SemanticAnnotation` object that is the most similar to
-        the given hand annotation, or the original hand annotation if no
-        suitable match is found within the threshold.
-    """
-    if not objects:
-        return hand_annotation
-
-    best_distance = math.inf
-    most_similar = None
-    counter = 0
-    for object in objects:
-        for cls in type(object).__mro__:
-            dist = inheritance_path_length(type(hand_annotation), cls)
-            if dist is None:
-                counter = counter + 1
-                continue
-
-            if counter < best_distance:
-                best_distance = counter
-                most_similar = object
-                break
-        counter = 0
-    # Apply threshold
-    if best_distance > threshold or most_similar is None:
-        return hand_annotation
-    return most_similar
-
-
-world1 = test_load_world()
-banana = world1.get_semantic_annotation_by_name("banana_annotation")
-apple = world1.get_semantic_annotation_by_name("apple_annotation")
-carrot = world1.get_semantic_annotation_by_name("carrot_annotation")
-orange = world1.get_semantic_annotation_by_name("orange_annotation")
-lettuce = world1.get_semantic_annotation_by_name("lettuce_annotation")
-table1 = world1.get_semantic_annotation_by_name("fruit_table_annotation")
-table2 = world1.get_semantic_annotation_by_name("vegetable_table_annotation")
-table3 = world1.get_semantic_annotation_by_name("empty_table_annotation")
-
-
-def most_similar_ob_eql(
-    hand_annotation: SemanticAnnotation,
     tables: List[SemanticAnnotation],
     world: World,
     threshold: int = 1,
 ) -> SemanticAnnotation:
+    """
+    Finds the most similar object to a given semantic annotation among a list of tables
+    based on the inheritance path length. If the similarity does not meet the provided
+    threshold, the method attempts to return the table that is not supporting any object.
+    The similarity metric leverages the class hierarchy to compute distances.
 
+    :param hand_annotation: The semantic annotation of the hand to compare.
+    :param tables: A list of table semantic annotations to search for similar objects.
+    :param world: The contextual world data used for determining support relationships
+                  and querying objects.
+    :param threshold: The maximum acceptable inheritance path length to classify objects
+                      as similar. Defaults to 1.
+    :return: The semantic annotation of the most appropriate table based on similarity
+             metrics or the non-supporting table when no viable candidate is found.
+    """
     if not tables:
-        return hand_annotation
+        raise IncorrectParameterScaleError(tables)
+
+    # Find the table that is not supporting anything
+    non_supporting_table = None
     for table in tables:
-        if is_supporting(table.bodies[0], world):
-            continue
-        else:
-            emptay_table = table
+        if not is_supporting(table.bodies[0], world):
+            non_supporting_table = table
+            break
+
+    # Query annotations on the surfaces of the tables
+    objects = query_semantic_annotations_on_surfaces(tables, world).tolist()
 
     best_distance = math.inf
     most_similar = None
-    counter = 0
-    objects = query_semantic_annotations_on_surfaces(tables, world).tolist()
-    for object in objects:
-        for cls in type(object).__mro__:
+
+    # Iterate over each object to find the most similar based on inheritance path length
+    for obj in objects:
+        for cls in type(obj).__mro__:
             dist = inheritance_path_length(type(hand_annotation), cls)
             if dist is None:
-                counter = counter + 1
                 continue
+            if dist < best_distance:
+                best_distance = dist
+                most_similar = obj
+            break  # Once a match is found, no need to check further classes for this object
 
-            if counter < best_distance:
-                best_distance = counter
-                most_similar = object
-                break
-        counter = 0
-    # Apply threshold
+    # Apply threshold to determine if the match is acceptable
     if best_distance > threshold or most_similar is None:
-        return emptay_table
-    return most_similar
+        return non_supporting_table
 
-
-print(most_similar_ob_eql(banana, [table3, table2], world1))
-
-# print(query_semantic_annotations_on_surfaces([table1, table2], world1).tolist()[0])
-
-# print(is_supported_by(apple.bodies[0], table2.bodies[0]))
-
-
-# print(is_supporting(table3.bodies[0], world1))
+    # Find the table supporting the most similar object
+    for table in tables:
+        if is_supported_by(most_similar.bodies[0], table.bodies[0]):
+            return table

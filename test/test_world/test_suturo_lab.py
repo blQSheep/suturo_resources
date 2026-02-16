@@ -1,4 +1,6 @@
+import pytest
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
+from semantic_digital_twin.exceptions import IncorrectParameterScaleError
 from semantic_digital_twin.world import World
 
 from conftest import test_load_world
@@ -16,7 +18,7 @@ def test_load_environment_returns_world():
     """
     world = load_environment()
     assert isinstance(world, World)
-    assert world.root.name == PrefixedName("map")
+    assert world.root.name == PrefixedName("root_slam")
 
 
 def test_query_semantic_annotations_on_surfaces():
@@ -70,33 +72,19 @@ def test_query_get_next_object_euclidean_x_y():
 
 def test_query_most_similar_obj():
     """
-    Test function for validating the behavior of querying the most similar object from
-    a list of semantic annotations.
+    Tests the `query_most_similar_obj` function for determining the most suitable
+    semantic annotation object from a set of candidates based on similarity and
+    other constraints. The function is evaluated under multiple scenarios to verify
+    its logic in choosing the correct table, handling empty tables, and cases with
+    no valid candidates.
 
-    The test involves loading a virtual environment, fetching semantic annotations
-    of specific objects, creating lists of semantic annotations on specific surfaces,
-    and verifying the functionality of the `query_most_similar_obj` function.
-
-    This test ensures that the function correctly identifies and returns the most
-    similar object from a given list. It includes assertions for both matching and
-    non-matching cases, along with scenarios where the input list is empty.
+    :raises IncorrectParameterScaleError: If there are no tables provided in the
+        candidate list for comparison.
     """
     world = test_load_world()
     table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
     table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
     table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
-    list_of_products_1_2 = query_semantic_annotations_on_surfaces(
-        [table1, table2], world
-    ).tolist()  # has apple, orange, carrot and lettuce
-    list_of_products_1 = query_semantic_annotations_on_surfaces(
-        [table1], world
-    ).tolist()  # has apple and orange
-    list_of_products_2 = query_semantic_annotations_on_surfaces(
-        [table2], world
-    ).tolist()  # has carrot and lettuce
-    list_of_products_3 = query_semantic_annotations_on_surfaces(
-        [table3], world
-    ).tolist()  # empty
 
     banana = world.get_semantic_annotation_by_name("banana_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
@@ -104,10 +92,14 @@ def test_query_most_similar_obj():
     orange = world.get_semantic_annotation_by_name("orange_annotation")
     lettuce = world.get_semantic_annotation_by_name("lettuce_annotation")
 
-    assert query_most_similar_obj(orange, list_of_products_1_2) == orange
-    assert query_most_similar_obj(banana, list_of_products_1_2) == apple
-    assert query_most_similar_obj(lettuce, list_of_products_1_2) == lettuce
-    assert query_most_similar_obj(carrot, list_of_products_3) == carrot
-    assert query_most_similar_obj(apple, list_of_products_2) == apple
-    assert query_most_similar_obj(carrot, list_of_products_1) == carrot
-    assert query_most_similar_obj(table1, list_of_products_1_2) == table1
+    # choosing the correct table
+    assert query_most_similar_obj(banana, [table1, table2, table3], world) == table1
+    assert query_most_similar_obj(carrot, [table1, table2, table3], world) == table2
+    # choosing the empty table
+    assert query_most_similar_obj(lettuce, [table1, table3], world) == table3
+    assert query_most_similar_obj(table1, [table1, table2, table3], world) == table3
+    # returning None if there is no empty table
+    assert query_most_similar_obj(apple, [table2], world) == None
+    # returning an error if there are no tables
+    with pytest.raises(IncorrectParameterScaleError):
+        query_most_similar_obj(orange, [], world)
