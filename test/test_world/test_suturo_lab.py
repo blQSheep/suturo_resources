@@ -85,6 +85,7 @@ def test_query_most_similar_obj():
     table1 = world.get_semantic_annotation_by_name("fruit_table_annotation")
     table2 = world.get_semantic_annotation_by_name("vegetable_table_annotation")
     table3 = world.get_semantic_annotation_by_name("empty_table_annotation")
+    table4 = world.get_semantic_annotation_by_name("empty_table2_annotation")
 
     banana = world.get_semantic_annotation_by_name("banana_annotation")
     apple = world.get_semantic_annotation_by_name("apple_annotation")
@@ -102,6 +103,9 @@ def test_query_most_similar_obj():
     assert query_most_similar_obj(orange, [table2, table3], world, 2) == table2
     # returning None if there is no empty table
     assert query_most_similar_obj(apple, [table2], world) == None
+    # trying with 2 empty tables
+    assert query_most_similar_obj(apple, [table2, table3, table4], world) == table3
+    assert query_most_similar_obj(apple, [table2, table4, table3], world) == table4
     # returning an error if there are no tables
     with pytest.raises(IncorrectParameterScaleError):
         query_most_similar_obj(orange, [], world)

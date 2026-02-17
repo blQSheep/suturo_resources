@@ -71,8 +71,8 @@ def query_get_next_object_euclidean_x_y(
 
 
 def query_most_similar_obj(
-    hand_annotation: SemanticAnnotation,
-    tables: List[SemanticAnnotation],
+    main_annotation: SemanticAnnotation,
+    supporting_surfaces: List[SemanticAnnotation],
     world: World,
     threshold: int = 1,
 ) -> SemanticAnnotation:
@@ -82,8 +82,8 @@ def query_most_similar_obj(
     threshold, the method attempts to return the table that is not supporting any object.
     The similarity metric leverages the class hierarchy to compute distances.
 
-    :param hand_annotation: The semantic annotation of the hand to compare.
-    :param tables: A list of table semantic annotations to search for similar objects.
+    :param main_annotation: The semantic annotation to compare.
+    :param supporting_surfaces: A list of supporting surfaces semantic annotations to search on top of them for similar objects to the main_annotation.
     :param world: The contextual world data used for determining support relationships
                   and querying objects.
     :param threshold: The maximum acceptable inheritance path length to classify objects
@@ -91,18 +91,20 @@ def query_most_similar_obj(
     :return: The semantic annotation of the most appropriate table based on similarity
              metrics or the non-supporting table when no viable candidate is found.
     """
-    if not tables:
-        raise IncorrectParameterScaleError(tables)
+    if not supporting_surfaces:
+        raise IncorrectParameterScaleError(supporting_surfaces)
 
     # Find the table that is not supporting anything
     non_supporting_table = None
-    for table in tables:
-        if not is_supporting(table.bodies[0], world):
-            non_supporting_table = table
+    for supporting_surface in supporting_surfaces:
+        if not is_supporting(supporting_surface.bodies[0], world):
+            non_supporting_table = supporting_surface
             break
 
     # Query annotations on the surfaces of the tables
-    objects = query_semantic_annotations_on_surfaces(tables, world).tolist()
+    objects = query_semantic_annotations_on_surfaces(
+        supporting_surfaces, world
+    ).tolist()
 
     best_distance = math.inf
     most_similar = None
@@ -110,7 +112,7 @@ def query_most_similar_obj(
     # Iterate over each object to find the most similar based on inheritance path length
     for obj in objects:
         for cls in type(obj).__mro__:
-            dist = inheritance_path_length(type(hand_annotation), cls)
+            dist = inheritance_path_length(type(main_annotation), cls)
             if dist is None:
                 continue
             if dist < best_distance:
@@ -123,6 +125,6 @@ def query_most_similar_obj(
         return non_supporting_table
 
     # Find the table supporting the most similar object
-    for table in tables:
-        if is_supported_by(most_similar.bodies[0], table.bodies[0]):
-            return table
+    for supporting_surface in supporting_surfaces:
+        if is_supported_by(most_similar.bodies[0], supporting_surface.bodies[0]):
+            return supporting_surface
