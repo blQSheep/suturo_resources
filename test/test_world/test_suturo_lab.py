@@ -1,4 +1,3 @@
-import pytest
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.world import World
 
@@ -69,9 +68,9 @@ def test_query_get_next_object_euclidean_x_y():
     assert query_get_next_object_euclidean_x_y(toya, table3).tolist() == []
 
 
-def test_query_most_similar_obj():
+def test_query_surface_of_most_similar_obj():
     """
-    Tests the `query_most_similar_obj` function for determining the most suitable
+    Tests the `query_surface_of_most_similar_obj` function for determining the surface of the most suitable
     semantic annotation object from a set of candidates based on similarity and
     other constraints. The function is evaluated under multiple scenarios to verify
     its logic in choosing the correct table, handling empty tables, and cases with

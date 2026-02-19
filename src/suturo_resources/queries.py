@@ -82,10 +82,10 @@ def query_surface_of_most_similar_obj(
     The similarity metric leverages the class hierarchy to compute distances.
 
     :param object_of_interest: The semantic annotation to compare.
-    :param supporting_surfaces: A list of supporting surfaces semantic annotations to search on top of them for similar objects to the main_annotation.
+    :param supporting_surfaces: A list of supporting surfaces semantic annotations to search on top of them for similar objects to the object_of_interest.
     :param threshold: The maximum acceptable inheritance path length to classify objects
                       as similar. Defaults to 1.
-    :return: The semantic annotation of the most appropriate table based on similarity
+    :return: The semantic annotation of the most appropriate surface based on similarity
              metrics or the non-supporting table when no viable candidate is found.
     """
     if not supporting_surfaces:
