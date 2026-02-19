@@ -94,10 +94,10 @@ def query_most_similar_obj(
     if not supporting_surfaces:
         raise IncorrectParameterScaleError(supporting_surfaces)
 
-    # Find the table that is not supporting anything
+    # Find the surface that is not supporting anything
     non_supporting_table = None
     for supporting_surface in supporting_surfaces:
-        if not is_supporting(supporting_surface.bodies[0], world):
+        if not is_supporting(supporting_surface.bodies[0]):
             non_supporting_table = supporting_surface
             break
 
