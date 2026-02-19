@@ -86,7 +86,7 @@ def query_surface_of_most_similar_obj(
     :param threshold: The maximum acceptable inheritance path length to classify objects
                       as similar. Defaults to 1.
     :return: The semantic annotation of the most appropriate surface based on similarity
-             metrics or the non-supporting table when no viable candidate is found.
+             metrics or the non-supporting table when no viable candidate is found, or None if there are no supporting surfaces.
     """
     if not supporting_surfaces:
         return None
