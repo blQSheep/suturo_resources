@@ -13,11 +13,14 @@ from semantic_digital_twin.reasoning.predicates import (
 )
 from semantic_digital_twin.semantic_annotations.mixins import HasSupportingSurface
 from semantic_digital_twin.world import World
+from semantic_digital_twin.world_description.geometry import Color
 
 from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
+
+from suturo_resources.suturo_map import load_environment
 
 
 def query_semantic_annotations_on_surfaces(
@@ -125,3 +128,62 @@ def query_surface_of_most_similar_obj(
     for supporting_surface in supporting_surfaces:
         if is_supported_by(most_similar.bodies[0], supporting_surface.bodies[0]):
             return supporting_surface
+
+
+# def query_body_by_color(color: str, world: World) -> [Body]:
+#     """
+#     Queries bodies in the world that have a specific color. This function assumes that the color information is stored as a semantic annotation on the bodies.
+#
+#     :param color: The color to query for (e.g., "red", "blue").
+#     :param world: The world object containing the bodies and their annotations.
+#     :return: A containing bodies that match the specified color.
+#     """
+#     bodies = variable_from(world.bodies)
+#     colored_bodies = entity(bodies).where(
+#         lambda body: any(
+#             annotation.color == color
+#             for annotation in body._semantic_annotations
+#             if hasattr(annotation, "color")
+#         )
+#     )
+#     return colored_bodies
+#
+#
+# print(query_body_by_color("red", load_environment()))
+
+
+# def query_bodies_by_color(color: str, world: World) -> List[Body]:
+#     """
+#     Retrieves all bodies in the world with a specific color.
+#
+#     :param color: The color to filter bodies by (e.g., "red").
+#     :param world: The World object containing bodies.
+#     :return: List of bodies matching the specified color.
+#     """
+#     bodies = variable_from(world.bodies)
+#     colored_bodies = entity(bodies).where(
+#         lambda body: any(
+#             getattr(annotation, "color", None) == color
+#             for annotation in body._semantic_annotations
+#         )
+#     )
+#     return colored_bodies
+
+
+def query_bodies_by_color(color: Color, world: World) -> List[Body]:
+    all_bodies = world.bodies
+    filtered_bodies = []
+
+    for body in all_bodies:
+        if not body.visual.shapes:
+            continue
+        if body.visual.shapes[0].color == color:
+            filtered_bodies.append(body)
+    return filtered_bodies
+
+
+print(query_bodies_by_color(Color(1, 0.827, 0.6078), load_environment()))
+# print(load_environment().get_body_by_name("sofa_body").visual.shapes[0].color)
+# print(load_environment().get_body_by_name("cup").visual.shapes[0].color)
+
+print(load_environment().get_body_by_name("sofa_body").visual.shapes[0].color)

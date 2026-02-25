@@ -6,6 +6,8 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
     Table,
     Sofa,
     TrashCan,
+    Dishwasher,
+    Cup,
 )
 from semantic_digital_twin.world import World
 import threading
@@ -488,6 +490,26 @@ def build_environment_furniture(world: World):
         ),
     )
     all_elements_connections.append(root_C_diningTable)
+
+    with world.modify_world():
+        dishwasher = Dishwasher.create_with_new_body_in_world(
+            name=PrefixedName("dishwasher"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1, z=1
+            ),
+            scale=Scale(x=1, y=1, z=2),
+        )
+
+        cup = Cup.create_with_new_body_in_world(
+            name=PrefixedName("cup"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1, y=1, z=4
+            ),
+            scale=Scale(x=0.5, y=0.5, z=0.5),
+            color=red,
+        )
 
     with world.modify_world():
         for conn in all_elements_connections:
