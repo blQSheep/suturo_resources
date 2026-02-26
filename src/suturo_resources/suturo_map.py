@@ -24,8 +24,10 @@ from semantic_digital_twin.world_description.geometry import Cylinder
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
 from semantic_digital_twin.world_description.world_entity import Body
 
+# from .krood_entity_query_language.enums import Color as ColorEnum
+
 white = Color(1, 1, 1)
-red = Color(1, 0, 0)
+red = Color(255, 0, 0)
 blue = Color(0, 0, 1)
 orangeC = Color(1, 0.647, 0)
 yellow = Color(1, 1, 0)
@@ -508,13 +510,16 @@ def build_environment_furniture(world: World):
                 x=1, y=1, z=4
             ),
             scale=Scale(x=0.5, y=0.5, z=0.5),
-            color=red,
         )
 
     with world.modify_world():
         for conn in all_elements_connections:
             world.add_connection(conn)
 
+    with world.modify_world():
+        cup = world.get_body_by_name("cup")
+        for i in cup.visual.shapes:
+            i.color = red
     return world
 
 
