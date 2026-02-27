@@ -492,6 +492,7 @@ def build_environment_furniture(world: World):
     with world.modify_world():
         for conn in all_elements_connections:
             world.add_connection(conn)
+        world.add_semantic_annotations(all_elements_annotations)
 
     return world
 
