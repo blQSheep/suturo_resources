@@ -6,6 +6,13 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
     Table,
     Sofa,
     TrashCan,
+    Cupboard,
+    Door,
+    Fridge,
+    Cabinet,
+    Desk,
+    Handle,
+    Shelf,
 )
 from semantic_digital_twin.world import World
 import threading
@@ -316,6 +323,10 @@ def build_environment_furniture(world: World):
         collision=shape_geometry,
         visual=shape_geometry,
     )
+    refrigerator_annotation = Fridge(
+        root=refrigerator_body, name=PrefixedName("refrigerator_annotation")
+    )
+    all_elements_annotations.append(refrigerator_annotation)
 
     root_C_fridge = FixedConnection(
         parent=root,
@@ -333,6 +344,10 @@ def build_environment_furniture(world: World):
         collision=shape_geometry,
         visual=shape_geometry,
     )
+    counterTop_annotation = Cabinet(
+        root=counterTop_body, name=PrefixedName("counterTop_annotation")
+    )
+    all_elements_annotations.append(counterTop_annotation)
 
     root_C_counterTop = FixedConnection(
         parent=root,
@@ -350,6 +365,10 @@ def build_environment_furniture(world: World):
         collision=shape_geometry,
         visual=shape_geometry,
     )
+    ovenArea_annotation = Cabinet(
+        root=ovenArea_body, name=PrefixedName("ovenArea_annotation")
+    )
+    all_elements_annotations.append(ovenArea_annotation)
 
     root_C_ovenArea = FixedConnection(
         parent=root,
@@ -415,28 +434,104 @@ def build_environment_furniture(world: World):
     )
     all_elements_connections.append(root_C_lowerTable)
 
-    cabinet = Box(scale=Scale(0.43, 0.80, 2.02), color=white)
-    shape_geometry = ShapeCollection([cabinet])
-    cabinet_body = Body(
-        name=PrefixedName("cabinet_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+    # Create Cupboard using the mixin factory method
+    # This automatically creates a hollow body with the opening facing Negative X
+    with world.modify_world():
+        cupboard = Cupboard.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_annotation"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=3.8, y=4.72, z=1.01 # x=4.8, y=4.72, z=1.01
+            ),
+            scale=Scale(0.43, 0.80, 2.02),
+            wall_thickness=0.02,
+        )
 
-    root_C_cabinet = FixedConnection(
-        parent=root,
-        child=cabinet_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=4.8, y=4.72, z=1.01
-        ),
-    )
-    all_elements_connections.append(root_C_cabinet)
+        # Add Shelves
+        # Shelf dimensions: slightly smaller than the cabinet interior
+        # Cabinet inner width ~ 0.80 - 0.04 = 0.76
+        # Cabinet inner depth ~ 0.43 - 0.02 = 0.41
+        shelf_scale = Scale(0.40, 0.76, 0.02)
+
+        # Shelf 1 at height offset -0.5 (relative to center)
+        shelf_1 = Shelf.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_shelf_1"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=3.8, y=4.72, z=1.01 - 0.5
+            ),
+            scale=shelf_scale
+        )
+        cupboard.add_shelf(shelf_1)
+
+        # Shelf 2 at height offset +0.5
+        shelf_2 = Shelf.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_shelf_2"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=3.8, y=4.72, z=1.01 + 0.5
+            ),
+            scale=shelf_scale
+        )
+        cupboard.add_shelf(shelf_2)
+
+        # Create and add doors
+        # The cupboard opening is at the negative X face.
+        # We position the doors slightly in front of that face.
+        door_x = 4.8 - (0.43 / 2) - 0.01  # Center X - Half Width - Half Door Thickness
+        door_scale = Scale(0.02, 0.40, 2.02)
+
+        door_left = Door.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_door_left"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=door_x, y=4.72 - 0.20, z=1.01
+            ),
+            scale=door_scale,
+        )
+        cupboard.add_door(door_left)
+
+        door_right = Door.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_door_right"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=door_x, y=4.72 + 0.20, z=1.01
+            ),
+            scale=door_scale,
+        )
+        cupboard.add_door(door_right)
+
+        # Create and add handles
+        handle_scale = Scale(0.04, 0.02, 0.15)
+        handle_x = door_x - 0.01
+
+        handle_left = Handle.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_handle_left"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=handle_x, y=4.72 - 0.04, z=1.01, yaw=3.14159
+            ),
+            scale=handle_scale,
+        )
+        door_left.add_handle(handle_left)
+
+        handle_right = Handle.create_with_new_body_in_world(
+            name=PrefixedName("cupboard_handle_right"),
+            world=world,
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=handle_x, y=4.72 + 0.04, z=1.01, yaw=3.14159
+            ),
+            scale=handle_scale,
+        )
+        door_right.add_handle(handle_right)
 
     desk = Box(scale=Scale(0.60, 1.20, 0.75), color=white)
     shape_geometry = ShapeCollection([desk])
     desk_body = Body(
         name=PrefixedName("desk_body"), collision=shape_geometry, visual=shape_geometry
     )
+    desk_annotation = Desk(root=desk_body, name=PrefixedName("desk_annotation"))
+    all_elements_annotations.append(desk_annotation)
 
     root_C_desk = FixedConnection(
         parent=root,
@@ -501,7 +596,8 @@ def build_environment_rooms(world: World):
 
     room_annotations = []
 
-    root_slam_T_root = world.get_body_by_name("root").parent_connection.origin
+    root_body = world.get_body_by_name("root")
+    root_slam_T_root = root_body.parent_connection.origin_expression
 
     with world.modify_world():
         kitchen_floor_polytope = [
