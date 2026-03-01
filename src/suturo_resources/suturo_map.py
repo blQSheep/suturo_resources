@@ -17,6 +17,7 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
 from semantic_digital_twin.world import World
 import threading
 import rclpy
+import numpy as np
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.semantic_annotations.semantic_annotations import Room, Floor
 from semantic_digital_twin.spatial_types.spatial_types import (
@@ -434,23 +435,25 @@ def build_environment_furniture(world: World):
     )
     all_elements_connections.append(root_C_lowerTable)
 
-    # Create Cupboard using the mixin factory method
-    # This automatically creates a hollow body with the opening facing Negative X
+
     with world.modify_world():
+        cupboard_pose = Point3(3.8, 4.72, 1.01)
+        cupboard_scale = Scale(0.43, 0.80, 2.02)
+
         cupboard = Cupboard.create_with_new_body_in_world(
             name=PrefixedName("cupboard_annotation"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=3.8, y=4.72, z=1.01 # x=4.8, y=4.72, z=1.01
+                x=cupboard_pose.x, y=cupboard_pose.y, z=cupboard_pose.z
             ),
-            scale=Scale(0.43, 0.80, 2.02),
+            scale=cupboard_scale,
             wall_thickness=0.02,
         )
 
         # Add Shelves
         # Shelf dimensions: slightly smaller than the cabinet interior
-        # Cabinet inner width ~ 0.80 - 0.04 = 0.76
-        # Cabinet inner depth ~ 0.43 - 0.02 = 0.41
+        # Cabinet inner width ~ cupboard_scale.y - 0.04 = 0.76
+        # Cabinet inner depth ~ cupboard_scale.x - 0.02 = 0.41
         shelf_scale = Scale(0.40, 0.76, 0.02)
 
         # Shelf 1 at height offset -0.5 (relative to center)
@@ -458,7 +461,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_shelf_1"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=3.8, y=4.72, z=1.01 - 0.5
+                x=cupboard_pose.x, y=cupboard_pose.y, z=cupboard_pose.z - 0.5
             ),
             scale=shelf_scale
         )
@@ -469,7 +472,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_shelf_2"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=3.8, y=4.72, z=1.01 + 0.5
+                x=cupboard_pose.x, y=cupboard_pose.y, z=cupboard_pose.z + 0.5
             ),
             scale=shelf_scale
         )
@@ -478,14 +481,14 @@ def build_environment_furniture(world: World):
         # Create and add doors
         # The cupboard opening is at the negative X face.
         # We position the doors slightly in front of that face.
-        door_x = 4.8 - (0.43 / 2) - 0.01  # Center X - Half Width - Half Door Thickness
+        door_x = cupboard_pose.x - (cupboard_scale.x / 2) - 0.01  # Center X - Half Width - Half Door Thickness
         door_scale = Scale(0.02, 0.40, 2.02)
 
         door_left = Door.create_with_new_body_in_world(
             name=PrefixedName("cupboard_door_left"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x, y=4.72 - 0.20, z=1.01
+                x=door_x, y=cupboard_pose.y - 0.20, z=cupboard_pose.z
             ),
             scale=door_scale,
         )
@@ -495,7 +498,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_door_right"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x, y=4.72 + 0.20, z=1.01
+                x=door_x, y=cupboard_pose.y + 0.20, z=cupboard_pose.z
             ),
             scale=door_scale,
         )
@@ -509,7 +512,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_handle_left"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=handle_x, y=4.72 - 0.04, z=1.01, yaw=3.14159
+                x=handle_x, y=cupboard_pose.y - 0.04, z=cupboard_pose.z, yaw=np.pi
             ),
             scale=handle_scale,
         )
@@ -519,7 +522,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_handle_right"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=handle_x, y=4.72 + 0.04, z=1.01, yaw=3.14159
+                x=handle_x, y=cupboard_pose.y + 0.04, z=cupboard_pose.z, yaw=np.pi
             ),
             scale=handle_scale,
         )

@@ -15,8 +15,6 @@ def test_load_environment_returns_world():
     Tests that loading the environment returns a World object with the correct root name.
     """
     world = load_environment()
-    publisher = Publisher("semantic_digital_twin")
-    publisher.publish(world)
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root_slam")
 
