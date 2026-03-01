@@ -526,6 +526,8 @@ def build_environment_furniture(world: World):
             ),
             scale=handle_scale,
         )
+        world.add_connection(door_right_C_handle)
+        world.add_semantic_annotation(handle_right)
         door_right.add_handle(handle_right)
 
     desk = Box(scale=Scale(0.60, 1.20, 0.75), color=white)
