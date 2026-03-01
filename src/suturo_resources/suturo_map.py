@@ -488,7 +488,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_door_left"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x, y=cupboard_pose.y - 0.20, z=cupboard_pose.z
+                x=door_x + 0.40, y=cupboard_pose.y - 0.20, z=cupboard_pose.z
             ),
             scale=door_scale,
         )
@@ -498,7 +498,7 @@ def build_environment_furniture(world: World):
             name=PrefixedName("cupboard_door_right"),
             world=world,
             world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x, y=cupboard_pose.y + 0.20, z=cupboard_pose.z
+                x=door_x + 0.40, y=cupboard_pose.y + 0.20, z=cupboard_pose.z
             ),
             scale=door_scale,
         )
@@ -599,8 +599,7 @@ def build_environment_rooms(world: World):
 
     room_annotations = []
 
-    root_body = world.get_body_by_name("root")
-    root_slam_T_root = root_body.parent_connection.origin_expression
+    root_slam_T_root = world.get_body_by_name("root").parent_connection.origin_expression
 
     with world.modify_world():
         kitchen_floor_polytope = [
