@@ -24,6 +24,7 @@ from semantic_digital_twin.world_description.geometry import (
 )
 from semantic_digital_twin.world_description.shape_collection import ShapeCollection
 
+
 def test_load_world():
     world = World()
     red = Color(255, 0, 0)
@@ -93,6 +94,27 @@ def test_load_world():
         child=empty_table_body,
         parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
             x=1, y=1, z=4
+        ),
+    )
+    all_elements_connections.append(root_C_empty_table)
+
+    empty_table2 = Box(scale=Scale(2, 2, 1))
+    shape_geometry = ShapeCollection([empty_table2])
+    empty_table2_body = Body(
+        name=PrefixedName("empty_table2_body"),
+        collision=shape_geometry,
+        visual=shape_geometry,
+    )
+    empty_table2_annotation = Table(
+        root=empty_table_body, name=PrefixedName("empty_table2_annotation")
+    )
+    all_elements_annotations.append(empty_table2_annotation)
+
+    root_C_empty_table = FixedConnection(
+        parent=root,
+        child=empty_table2_body,
+        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
+            x=1, y=1, z=6
         ),
     )
     all_elements_connections.append(root_C_empty_table)
