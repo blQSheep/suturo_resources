@@ -511,7 +511,7 @@ def build_environment_furniture(world: World):
         door_scale = Scale(0.02, 0.40, door_height)
 
         # Left Door (Open via Hinge)
-        # 1. Create Hinge
+        # Create Hinge for the left door
         hinge_left_body = Body(name=PrefixedName("cupboard_hinge_left_body"))
         hinge_left = Hinge(
             root=hinge_left_body,
@@ -530,7 +530,7 @@ def build_environment_furniture(world: World):
         world.add_connection(cupboard_C_hinge_left)
         world.add_semantic_annotation(hinge_left)
 
-        # 2. Create Door
+        # Create left door
         door_left_geom = ShapeCollection([Box(scale=door_scale, color=white)])
         door_left_body = Body(
             name=PrefixedName("cupboard_door_left_body"),
