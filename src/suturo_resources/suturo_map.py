@@ -437,6 +437,8 @@ def build_environment_furniture(world: World):
     desk_body = Body(
         name=PrefixedName("desk_body"), collision=shape_geometry, visual=shape_geometry
     )
+    desk_annotaion = Table(root=desk_body, name=PrefixedName("desk_annotation"))
+    all_elements_annotations.append(desk_annotaion)
 
     root_C_desk = FixedConnection(
         parent=root,
@@ -492,6 +494,8 @@ def build_environment_furniture(world: World):
     with world.modify_world():
         for conn in all_elements_connections:
             world.add_connection(conn)
+        for annotation in all_elements_annotations:
+            world.add_semantic_annotation(annotation)
 
     return world
 
