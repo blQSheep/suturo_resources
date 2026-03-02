@@ -375,13 +375,29 @@ def build_environment_furniture(world: World):
     )
     all_elements_connections.append(root_C_ovenArea)
 
-    table = Box(scale=Scale(2.45, 0.796, 0.845))
-    shape_geometry = ShapeCollection([table])
-    table_body = Body(
-        name=PrefixedName("table_body"), collision=shape_geometry, visual=shape_geometry
-    )
-    table_annotation = Table(root=table_body, name=PrefixedName("table_annotation"))
-    all_elements_annotations.append(table_annotation)
+    with world.modify_world():
+        table = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("table"),
+            world_root_T_self=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(x=3.545, y=0.426, z=0.4225),
+            scale=Scale(x=2.45, y=0.796, z=0.845),
+        )
+
+        sofa = Sofa.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("sofa"),
+            world_root_T_self=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(x=3.60, y=1.20, z=0.34),
+            scale=Scale(x=1.68, y=0.94, z=0.68),
+        )
+        for color in sofa.bodies[0].visual.shapes:
+            color.color = Color.BEIGE()
+
+        lowerTable = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("lowerTable"),
+            world_root_T_self=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(x=4.22, y=2.22, z=0.22),
+            scale=Scale(x=0.37, y=0.91, z=0.44),
+        )
 
         cabinet = Cabinet.create_with_new_body_in_world(
             world=world,

@@ -122,7 +122,9 @@ def test_load_world():
     )
     all_elements_connections.append(root_C_toya)
 
+
     with world.modify_world():
         for conn in all_elements_connections:
             world.add_connection(conn)
-        return world
+
+    return world
