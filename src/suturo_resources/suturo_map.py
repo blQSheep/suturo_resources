@@ -499,11 +499,16 @@ def build_environment_furniture(world: World):
         cupboard.add_shelf_layer(shelf_2)
 
         # Creating doors manually and attaching them directly to the cupboard
+        # Door height 105.5 cm (1.055 m)
+        door_height = 1.055
+        # Position Z: Bottom of cupboard is at -cupboard_scale.z / 2.
+        # Door center should be at Bottom + door_height / 2
+        door_z_rel = -(cupboard_scale.z / 2) + (door_height / 2)
+        
         door_x_rel = -(cupboard_scale.x / 2) - 0.01
-        door_scale = Scale(0.02, 0.40, 2.02)
+        door_scale = Scale(0.02, 0.40, door_height)
 
-
-        # Left Door
+        # Left Door (Open)
         door_left_geom = ShapeCollection([Box(scale=door_scale, color=white)])
         door_left_body = Body(
             name=PrefixedName("cupboard_door_left_body"),
@@ -516,14 +521,16 @@ def build_environment_furniture(world: World):
             parent=cupboard.root,
             child=door_left_body,
             parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x_rel, y=-0.20, z=0
+                # Open 90 degrees outwards (counter-clockwise)
+                # Hinge is at y=-0.40. Center moves from (x_rel, -0.20) to (x_rel - 0.20, -0.40)
+                x=door_x_rel - 0.20, y=-0.40, z=door_z_rel, yaw=np.pi / 2
             ),
         )
         world.add_connection(cupboard_C_door_left)
         world.add_semantic_annotation(door_left)
         cupboard.add_door(door_left)
 
-        # Right Door
+        # Right Door (Closed)
         door_right_geom = ShapeCollection([Box(scale=door_scale, color=white)])
         door_right_body = Body(
             name=PrefixedName("cupboard_door_right_body"),
@@ -536,7 +543,7 @@ def build_environment_furniture(world: World):
             parent=cupboard.root,
             child=door_right_body,
             parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=door_x_rel, y=0.20, z=0
+                x=door_x_rel, y=0.20, z=door_z_rel
             ),
         )
         world.add_connection(cupboard_C_door_right)
@@ -544,7 +551,9 @@ def build_environment_furniture(world: World):
         cupboard.add_door(door_right)
 
         # Creating handles manually and attaching them directly to the doors
-        handle_scale = Scale(0.04, 0.02, 0.15)
+        handle_scale = Scale(0.04, 0.02, 0.02)
+        # Place handle at the center of the door
+        handle_z_local = 0.0
 
         # Left Handle
         handle_left_geom = ShapeCollection([Box(scale=handle_scale, color=white)])
@@ -561,7 +570,7 @@ def build_environment_furniture(world: World):
             parent=door_left.root,
             child=handle_left_body,
             parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=-0.01, y=0.16, z=0, yaw=np.pi
+                x=-0.01, y=0.16, z=handle_z_local, yaw=np.pi
             ),
         )
         world.add_connection(door_left_C_handle)
@@ -583,7 +592,7 @@ def build_environment_furniture(world: World):
             parent=door_right.root,
             child=handle_right_body,
             parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-                x=-0.01, y=-0.16, z=0, yaw=np.pi
+                x=-0.01, y=-0.16, z=handle_z_local, yaw=np.pi
             ),
         )
         world.add_connection(door_right_C_handle)
