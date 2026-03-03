@@ -29,19 +29,9 @@ def load_environment():
     Returns the constructed World object representing the environment.
     """
     world = World()
-    root_slam = Body(name=PrefixedName("root_slam"))
     root = Body(name=PrefixedName("root"))
-
-    root_slam_C_root = FixedConnection(
-        parent=root_slam,
-        child=root,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=0.33, y=0.28, yaw=0.10707963267
-        ),
-    )
     with world.modify_world():
-        world.add_connection(root_slam_C_root) # ToDelete
-        # world.add_body(root)
+        world.add_body(root)
 
     build_environment_walls(world)
     build_environment_furniture(world)
@@ -56,195 +46,110 @@ def build_environment_walls(world: World):
     The walls are represented as Body objects connected via FixedConnections.
     Returns the updated World object with walls integrated.
     """
-    all_wall_connections = []
-    root = world.get_body_by_name("root")
-
-    south_wall1 = Box(scale=Scale(0.05, 1.00, 3.00))
-    shape_geometry = ShapeCollection([south_wall1])
-    south_wall1_body = Body(
-        name=PrefixedName("south_wall1_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
+    root = world.root
+    root_transformation = HomogeneousTransformationMatrix.from_xyz_rpy(
+        x=0.33, y=0.28, yaw=0.10707963267
     )
 
-    root_C_south_wall1 = FixedConnection(
-        parent=root,
-        child=south_wall1_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            y=-2.01, z=1.50
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall1)
+    with world.modify_world():
+        south_wall1 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall1"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                y=-2.01
+            ),
+            scale=Scale(x=0.05, y=1.00, z=3.00),
+        )
 
-    south_wall2 = Box(scale=Scale(0.29, 0.05, 3.00))
-    shape_geometry = ShapeCollection([south_wall2])
-    south_wall2_body = Body(
-        name=PrefixedName("south_wall2_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+        south_wall2 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall2"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.145, y=-1.45, yaw=np.pi/2
+            ),
+            scale=Scale(x=0.05, y=0.29, z=3.00),
+        )
 
-    root_C_south_wall2 = FixedConnection(
-        parent=root,
-        child=south_wall2_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.145, y=-1.45, z=1.50
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall2)
+        south_wall3 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall3"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.29, y=-0.9925
+            ),
+            scale=Scale(x=0.05, y=1.085, z=1.00),
+        )
 
-    south_wall3 = Box(scale=Scale(0.05, 1.085, 1.00))
-    shape_geometry = ShapeCollection([south_wall3])
-    south_wall3_body = Body(
-        name=PrefixedName("south_wall3_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+        south_wall4 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall4"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.145, y=-0.45, yaw=np.pi/2
+            ),
+            scale=Scale(x=0.05, y=0.29, z=1.00),
+        )
 
-    root_C_south_wall3 = FixedConnection(
-        parent=root,
-        child=south_wall3_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.29, y=-0.9925, z=0.5
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall3)
+        south_wall5 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall5"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.145, y=0.45, yaw=np.pi/2
+            ),
+            scale=Scale(0.05, 0.29, 1.00),
+        )
 
-    south_wall4 = Box(scale=Scale(0.29, 0.05, 1.00))
-    shape_geometry = ShapeCollection([south_wall4])
-    south_wall4_body = Body(
-        name=PrefixedName("south_wall4_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+        south_wall6 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall6"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.29025, y=1.80
+            ),
+            scale=Scale(0.05, 2.75, 1.00),
+        )
 
-    root_C_south_wall4 = FixedConnection(
-        parent=root,
-        child=south_wall4_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.145, y=-0.45, z=0.5
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall4)
+        south_wall7 = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("south_wall7"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=-0.29025, y=5.16
+            ),
+            scale=Scale(0.05, 2.27, 1.00),
+        )
 
-    south_wall5 = Box(scale=Scale(0.29, 0.05, 1.00))
-    shape_geometry = ShapeCollection([south_wall5])
-    south_wall5_body = Body(
-        name=PrefixedName("south_wall5_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+        east_wall = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("east_wall"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=2.462, y=-2.535, yaw=np.pi/2
+            ),
+            scale=Scale(0.05, 4.924, 3.00),
+        )
 
-    root_C_south_wall5 = FixedConnection(
-        parent=root,
-        child=south_wall5_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.145, y=0.45, z=0.5
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall5)
+        middle_wall = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("middle_wall"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=2.20975, y=5.00
+            ),
+            scale=Scale(0.05, 2.67, 1.00),
+        )
 
-    south_wall6 = Box(scale=Scale(0.05, 2.75, 1.00))
-    shape_geometry = ShapeCollection([south_wall6])
-    south_wall6_body = Body(
-        name=PrefixedName("south_wall6_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
+        west_wall = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("west_wall"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=1.9345, y=6.32, yaw=np.pi/2
+            ),
+            scale=Scale(0.05, 4.449, 3.00),
+        )
 
-    root_C_south_wall6 = FixedConnection(
-        parent=root,
-        child=south_wall6_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.29025, y=1.80, z=0.5
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall6)
-
-    south_wall7 = Box(scale=Scale(0.05, 2.27, 1.00))
-    shape_geometry = ShapeCollection([south_wall7])
-    south_wall7_body = Body(
-        name=PrefixedName("south_wall7_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-
-    root_C_south_wall7 = FixedConnection(
-        parent=root,
-        child=south_wall7_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=-0.29025, y=5.16, z=0.5
-        ),
-    )
-    all_wall_connections.append(root_C_south_wall7)
-
-    east_wall = Box(scale=Scale(4.924, 0.05, 3.00))
-    shape_geometry = ShapeCollection([east_wall])
-    east_wall_body = Body(
-        name=PrefixedName("east_wall_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-
-    root_C_east_wall = FixedConnection(
-        parent=root,
-        child=east_wall_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=2.462, y=-2.535, z=1.50
-        ),
-    )
-    all_wall_connections.append(root_C_east_wall)
-
-    middle_wall = Box(scale=Scale(0.05, 2.67, 1.00))
-    shape_geometry = ShapeCollection([middle_wall])
-    middle_wall_body = Body(
-        name=PrefixedName("middle_wall_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-
-    root_C_middle_wall = FixedConnection(
-        parent=root,
-        child=middle_wall_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=2.20975, y=5.00, z=0.50
-        ),
-    )
-    all_wall_connections.append(root_C_middle_wall)
-
-    west_wall = Box(scale=Scale(4.449, 0.05, 3.00))
-    shape_geometry = ShapeCollection([west_wall])
-    west_wall_body = Body(
-        name=PrefixedName("west_wall_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-
-    root_C_west_wall = FixedConnection(
-        parent=root,
-        child=west_wall_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1.9345, y=6.32, z=1.50
-        ),
-    )
-    all_wall_connections.append(root_C_west_wall)
-
-    north_wall = Box(scale=Scale(0.05, 8.04, 3.00))
-    shape_geometry = ShapeCollection([north_wall])
-    north_wall_body = Body(
-        name=PrefixedName("north_wall_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-
-    root_C_north_wall = FixedConnection(
-        parent=root,
-        child=north_wall_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=4.949, y=1.51, z=1.50
-        ),
-    )
-    all_wall_connections.append(root_C_north_wall)
+        north_wall = Wall.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("north_wall"),
+            world_root_T_self= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=4.949, y=1.51
+            ),
+            scale=Scale(0.05, 8.04, 3.00),
+        )
 
     north_west_wall = Cylinder(width=1.53, height=3.00)
     shape_geometry = ShapeCollection([north_west_wall])
@@ -257,15 +162,13 @@ def build_environment_walls(world: World):
     root_C_north_west_wall = FixedConnection(
         parent=root,
         child=north_west_wall_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
+        parent_T_connection_expression=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
             x=4.924, y=6.295, z=1.50
         ),
     )
-    all_wall_connections.append(root_C_north_west_wall)
 
     with world.modify_world():
-        for conn in all_wall_connections:
-            world.add_connection(conn)
+        world.add_connection(root_C_north_west_wall)
         return world
 
 
@@ -277,7 +180,7 @@ def build_environment_furniture(world: World):
     """
     all_elements_connections = []
     all_elements_annotations = []
-    root = world.get_body_by_name("root")
+    root = world.root
 
     root_transformation = HomogeneousTransformationMatrix.from_xyz_rpy(
         x=0.33, y=0.28, yaw=0.10707963267
@@ -298,30 +201,12 @@ def build_environment_furniture(world: World):
     root_C_trash_can = FixedConnection(
         parent=root,
         child=trash_can_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
+        parent_T_connection_expression=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
             x=0.416, y=5.5, z=0.20
         ),
     )
     all_elements_connections.append(root_C_trash_can)
 
-    # refrigerator = Box(scale=Scale(0.60, 0.658, 1.49), color=Color.ORANGE())
-    # shape_geometry = ShapeCollection([refrigerator])
-    # refrigerator_body = Body(
-    #     name=PrefixedName("refrigerator_body"),
-    #     collision=shape_geometry,
-    #     visual=shape_geometry,
-    # )
-    # refrigerator_annotation = Fridge(root=refrigerator_body, name=PrefixedName("refrigerator_annotation"))
-    # all_elements_annotations.append(refrigerator_annotation)
-    #
-    # root_C_fridge = FixedConnection(
-    #     parent=world.root,
-    #     child=refrigerator_body,
-    #     parent_T_connection_expression= root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
-    #         x=0.537, y=-2.181, z=0.745
-    #     ),
-    # )
-    # all_elements_connections.append(root_C_fridge)
     with world.modify_world():
         refrigerator = Fridge.create_with_new_body_in_world(
             world=world,
@@ -331,24 +216,6 @@ def build_environment_furniture(world: World):
             scale=Scale(x=0.60, y=0.658, z=1.49),
         )
 
-    # counterTop = Box(scale=Scale(2.044, 0.658, 0.545), color=Color.BEIGE())
-    # shape_geometry = ShapeCollection([counterTop])
-    # counterTop_body = Body(
-    #     name=PrefixedName("counterTop_body"),
-    #     collision=shape_geometry,
-    #     visual=shape_geometry,
-    # )
-    # counterTop_annotation = Counter_Top(root=counterTop_body, name=PrefixedName("counterTop_annotation"))
-    # all_elements_annotations.append(counterTop_annotation)
-    #
-    # root_C_counterTop = FixedConnection(
-    #     parent=root,
-    #     child=counterTop_body,
-    #     parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-    #         x=1.859, y=-2.181, z=0.2725
-    #     ),
-    # )
-    # all_elements_connections.append(root_C_counterTop)
         counterTop = Counter_Top.create_with_new_body_in_world(
             world=world,
             name=PrefixedName("counterTop"),
@@ -369,7 +236,7 @@ def build_environment_furniture(world: World):
     root_C_ovenArea = FixedConnection(
         parent=root,
         child=ovenArea_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
+        parent_T_connection_expression=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
             x=3.481, y=-2.181, z=0.745
         ),
     )
@@ -444,7 +311,9 @@ def build_environment_rooms(world: World):
 
     room_annotations = []
 
-    root_slam_T_root = world.get_body_by_name("root").parent_connection.origin
+    root_transformation = HomogeneousTransformationMatrix.from_xyz_rpy(
+        x=0.33, y=0.28, yaw=0.10707963267
+    )
 
     with world.modify_world():
         kitchen_floor_polytope = [
@@ -479,7 +348,7 @@ def build_environment_rooms(world: World):
             name=PrefixedName("kitchen_floor"),
             world=world,
             floor_polytope=kitchen_floor_polytope,
-            world_root_T_self=root_slam_T_root
+            world_root_T_self=root_transformation
             @ HomogeneousTransformationMatrix.from_xyz_rpy(x=2.317, y=-0.843),
         )
         kitchen = Room(floor=kitchen_floor, name=PrefixedName("kitchen"))
@@ -489,7 +358,7 @@ def build_environment_rooms(world: World):
             name=PrefixedName("living_room_floor"),
             world=world,
             floor_polytope=living_room_floor_polytope,
-            world_root_T_self=root_slam_T_root
+            world_root_T_self=root_transformation
             @ HomogeneousTransformationMatrix.from_xyz_rpy(x=2.317, y=2.3095),
         )
         living_room = Room(floor=living_room_floor, name=PrefixedName("living_room"))
@@ -499,7 +368,7 @@ def build_environment_rooms(world: World):
             name=PrefixedName("bed_room_floor"),
             world=world,
             floor_polytope=bed_room_floor_polytope,
-            world_root_T_self=root_slam_T_root
+            world_root_T_self=root_transformation
             @ HomogeneousTransformationMatrix.from_xyz_rpy(x=0.96, y=4.96),
         )
         bed_room = Room(floor=bed_room_floor, name=PrefixedName("bed_room"))
@@ -509,7 +378,7 @@ def build_environment_rooms(world: World):
             name=PrefixedName("office_floor"),
             world=world,
             floor_polytope=office_floor_polytope,
-            world_root_T_self=root_slam_T_root
+            world_root_T_self=root_transformation
             @ HomogeneousTransformationMatrix.from_xyz_rpy(x=3.56, y=4.96),
         )
         office = Room(floor=office_floor, name=PrefixedName("office"))

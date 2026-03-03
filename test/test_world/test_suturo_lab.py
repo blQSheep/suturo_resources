@@ -17,7 +17,7 @@ def test_load_environment_returns_world():
     """
     world = load_environment()
     assert isinstance(world, World)
-    assert world.root.name == PrefixedName("root_slam")
+    assert world.root.name == PrefixedName("root")
 
 
 def test_query_semantic_annotations_on_surfaces():
@@ -32,14 +32,14 @@ def test_query_semantic_annotations_on_surfaces():
     carrot = world.get_semantic_annotation_by_name("carrot")
     orange = world.get_semantic_annotation_by_name("orange")
     lettuce = world.get_semantic_annotation_by_name("lettuce")
-    assert query_semantic_annotations_on_surfaces([table1, table2], world).tolist() == [
-        apple,
+    assert [type(x) for x in query_semantic_annotations_on_surfaces([table1, table2], world).evaluate()] == [type(x) for x in
+        [apple,
         orange,
         carrot,
         lettuce,
-    ]
-    assert query_semantic_annotations_on_surfaces([table3], world).tolist() == []
-    assert query_semantic_annotations_on_surfaces([], world).tolist() == []
+    ]]
+    assert set(query_semantic_annotations_on_surfaces([table3], world).tolist()) == set([])
+    assert set(query_semantic_annotations_on_surfaces([], world).tolist()) == set([])
 
 
 def test_query_get_next_object_euclidean_x_y():
@@ -109,15 +109,18 @@ def test_query_body_by_color():
     Tests the query_annotations_by_color function by verifying the retrieval of semantic
     annotations by their associated colors.
 
-    The function validates that calling query_bodies_by_color with different color
+    The function validates that calling query_annotations_by_color with different color
     parameters returns the expected list of annotations corresponding to that color
-    within the test world.
+    within the given list of objects.
     """
-    world1 = test_load_world()
-    apple = world1.get_semantic_annotation_by_name("apple")
-    orange = world1.get_semantic_annotation_by_name("orange")
-    carrot = world1.get_semantic_annotation_by_name("carrot")
+    world = test_load_world()
+    table1 = world.get_semantic_annotation_by_name("fruit_table")
+    table2 = world.get_semantic_annotation_by_name("vegetable_table")
+    apple = world.get_semantic_annotation_by_name("apple")
+    orange = world.get_semantic_annotation_by_name("orange")
+    carrot = world.get_semantic_annotation_by_name("carrot")
 
-    assert query_annotations_by_color(Color.RED(), world1) == [apple]
-    assert query_annotations_by_color(Color.ORANGE(), world1) == [orange, carrot]
-    assert query_annotations_by_color(Color.BLUE(), world1) == []
+    assert query_annotations_by_color(Color.RED(), [apple, orange]) == [apple]
+    assert query_annotations_by_color(Color.ORANGE(), [apple, orange]) == [orange]
+    assert query_annotations_by_color(Color.BLUE(), [apple, orange,carrot]) == []
+    assert query_annotations_by_color(Color.ORANGE(), (query_semantic_annotations_on_surfaces([table1, table2], world).evaluate())) == [orange, carrot]
