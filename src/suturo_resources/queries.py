@@ -143,9 +143,10 @@ def query_annotations_by_color(color: Color, objects: list[SemanticAnnotation]) 
     filtered_bodies = []
 
     for body in all_bodies:
-        if body.visual is None:
+        if body.visual and body.collision is None:
             continue
-        if body.visual.shapes[0].color == color:
+        shapes = body.visual.shapes or body.collision.shapes
+        if shapes[0].color == color:
             filtered_bodies.append(body)
     filtered_annotations = []
     for body in filtered_bodies:

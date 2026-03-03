@@ -186,28 +186,16 @@ def build_environment_furniture(world: World):
         x=0.33, y=0.28, yaw=0.10707963267
     )
 
-    trash_can = Cylinder(width=0.30, height=0.40, color=Color.BLACK())
-    shape_geometry = ShapeCollection([trash_can])
-    trash_can_body = Body(
-        name=PrefixedName("trash_can_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    trash_can_annotation = TrashCan(
-        root=trash_can_body, name=PrefixedName("trash_can_annotation")
-    )
-    all_elements_annotations.append(trash_can_annotation)
-
-    root_C_trash_can = FixedConnection(
-        parent=root,
-        child=trash_can_body,
-        parent_T_connection_expression=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=0.416, y=5.5, z=0.20
-        ),
-    )
-    all_elements_connections.append(root_C_trash_can)
-
     with world.modify_world():
+        trash_can = TrashCan.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("trash_can"),
+            world_root_T_self=root_transformation @ HomogeneousTransformationMatrix.from_xyz_rpy(
+                x=0.416, y=5.5, z=0.20
+            ),
+            scale=Scale(x=0.30, y=0.30, z=0.40),
+        )
+
         refrigerator = Fridge.create_with_new_body_in_world(
             world=world,
             name=PrefixedName("refrigerator"),
