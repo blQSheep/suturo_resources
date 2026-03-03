@@ -4,7 +4,7 @@ from semantic_digital_twin.semantic_annotations.semantic_annotations import (
     Orange,
     Carrot,
     Lettuce,
-    Table,
+    Table, Cup, Dishwasher,
 )
 from semantic_digital_twin.world import World
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
@@ -27,187 +27,85 @@ from semantic_digital_twin.world_description.shape_collection import ShapeCollec
 
 def test_load_world():
     world = World()
-    red = Color(255, 0, 0)
-    orangeC = Color(1, 0.647, 0)
-    yellow = Color(255, 255, 0)
-    green = Color(0, 1, 0)
     all_elements_connections = []
-    all_elements_annotations = []
     root = Body(name=PrefixedName("root"))
 
-    fruit_table = Box(scale=Scale(2, 2, 1))
-    shape_geometry = ShapeCollection([fruit_table])
-    fruit_table_body = Body(
-        name=PrefixedName("fruit_table_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    fruit_table_annotation = Table(
-        root=fruit_table_body, name=PrefixedName("fruit_table_annotation")
-    )
-    all_elements_annotations.append(fruit_table_annotation)
+    with world.modify_world():
+        world.add_kinematic_structure_entity(root)
+        fruit_table = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("fruit_table"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=0),
+            scale=Scale(2, 2, 1),
+        )
 
-    root_C_fruit_table = FixedConnection(
-        parent=root,
-        child=fruit_table_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=0
-        ),
-    )
-    all_elements_connections.append(root_C_fruit_table)
+        vegetable_table = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("vegetable_table"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=2),
+            scale=Scale(2, 2, 1),
+        )
 
-    vegetable_table = Box(scale=Scale(2, 2, 1))
-    shape_geometry = ShapeCollection([vegetable_table])
-    vegetable_table_body = Body(
-        name=PrefixedName("vegetable_table_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    vegetable_table_annotation = Table(
-        root=vegetable_table_body, name=PrefixedName("vegetable_table_annotation")
-    )
-    all_elements_annotations.append(vegetable_table_annotation)
+        empty_table = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("empty_table"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=4),
+            scale=Scale(2, 2, 1),
+        )
 
-    root_C_vegetable_table = FixedConnection(
-        parent=root,
-        child=vegetable_table_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=2
-        ),
-    )
-    all_elements_connections.append(root_C_vegetable_table)
+        empty_table2 = Table.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("empty_table2"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=6),
+            scale=Scale(2, 2, 1),
+        )
 
-    empty_table = Box(scale=Scale(2, 2, 1))
-    shape_geometry = ShapeCollection([empty_table])
-    empty_table_body = Body(
-        name=PrefixedName("empty_table_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    empty_table_annotation = Table(
-        root=empty_table_body, name=PrefixedName("empty_table_annotation")
-    )
-    all_elements_annotations.append(empty_table_annotation)
 
-    root_C_empty_table = FixedConnection(
-        parent=root,
-        child=empty_table_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=4
-        ),
-    )
-    all_elements_connections.append(root_C_empty_table)
+        apple = Apple.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("apple"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=0.55),
+            scale=Scale(0.10, 0.10, 0.10),
+        )
+        for color in apple.bodies[0].visual.shapes:
+            color.color = Color.RED()
 
-    empty_table2 = Box(scale=Scale(2, 2, 1))
-    shape_geometry = ShapeCollection([empty_table2])
-    empty_table2_body = Body(
-        name=PrefixedName("empty_table2_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    empty_table2_annotation = Table(
-        root=empty_table_body, name=PrefixedName("empty_table2_annotation")
-    )
-    all_elements_annotations.append(empty_table2_annotation)
+        orange = Orange.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("orange"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=0.5, z=0.55),
+            scale=Scale(0.10, 0.10, 0.10),
+        )
+        for color in orange.bodies[0].visual.shapes:
+            color.color = Color.ORANGE()
 
-    root_C_empty_table = FixedConnection(
-        parent=root,
-        child=empty_table2_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=6
-        ),
-    )
-    all_elements_connections.append(root_C_empty_table)
+        carrot = Carrot.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("carrot"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1, z=2.6),
+            scale=Scale(0.05, 0.05, 0.20),
+        )
+        for color in carrot.bodies[0].visual.shapes:
+            color.color = Color.ORANGE()
 
-    apple = Sphere(radius=0.10, color=red)
-    shape_geometry = ShapeCollection([apple])
-    apple_body = Body(
-        name=PrefixedName("apple_body"), collision=shape_geometry, visual=shape_geometry
-    )
-    apple_annotation = Apple(root=apple_body, name=PrefixedName("apple_annotation"))
-    all_elements_annotations.append(apple_annotation)
-    root_C_apple = FixedConnection(
-        parent=root,
-        child=apple_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=0.6
-        ),
-    )
-    all_elements_connections.append(root_C_apple)
+        lettuce = Lettuce.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("lettuce"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=1, y=1.5, z=2.55),
+            scale=Scale(0.15, 0.15, 0.10),
+        )
+        for color in lettuce.bodies[0].visual.shapes:
+            color.color = Color.GREEN()
 
-    orange = Sphere(radius=0.10, color=orangeC)
-    shape_geometry = ShapeCollection([orange])
-    orange_body = Body(
-        name=PrefixedName("orange_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    orange_annotation = Orange(root=orange_body, name=PrefixedName("orange_annotation"))
-    all_elements_annotations.append(orange_annotation)
-    root_C_orange = FixedConnection(
-        parent=root,
-        child=orange_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=0.5, z=0.6
-        ),
-    )
-    all_elements_connections.append(root_C_orange)
+        banana = Banana.create_with_new_body_in_world(
+            world=world,
+            name=PrefixedName("banana"),
+            world_root_T_self=HomogeneousTransformationMatrix.from_xyz_rpy(x=10, y=10, z=10),
+            scale=Scale(0.20, 0.05, 0.05),
+        )
+        for color in banana.bodies[0].visual.shapes:
+            color.color = Color.YELLOW()
 
-    carrot = Cylinder(width=0.05, height=0.20, color=orangeC)
-    shape_geometry = ShapeCollection([carrot])
-    carrot_body = Body(
-        name=PrefixedName("carrot_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    carrot_annotation = Carrot(root=carrot_body, name=PrefixedName("carrot_annotation"))
-    all_elements_annotations.append(carrot_annotation)
-    root_C_carrot = FixedConnection(
-        parent=root,
-        child=carrot_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1, z=2.6
-        ),
-    )
-    all_elements_connections.append(root_C_carrot)
-
-    lettuce = Box(scale=Scale(0.15, 0.15, 0.10), color=green)
-    shape_geometry = ShapeCollection([lettuce])
-    lettuce_body = Body(
-        name=PrefixedName("lettuce_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    lettuce_annotation = Lettuce(
-        root=lettuce_body, name=PrefixedName("lettuce_annotation")
-    )
-    all_elements_annotations.append(lettuce_annotation)
-    root_C_lettuce = FixedConnection(
-        parent=root,
-        child=lettuce_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=1, y=1.5, z=2.55
-        ),
-    )
-    all_elements_connections.append(root_C_lettuce)
-
-    banana = Box(scale=Scale(0.20, 0.05, 0.05), color=yellow)
-    shape_geometry = ShapeCollection([banana])
-    banana_body = Body(
-        name=PrefixedName("banana_body"),
-        collision=shape_geometry,
-        visual=shape_geometry,
-    )
-    banana_annotation = Banana(root=banana_body, name=PrefixedName("banana_annotation"))
-    all_elements_annotations.append(banana_annotation)
-    root_C_banana = FixedConnection(
-        parent=root,
-        child=banana_body,
-        parent_T_connection_expression=HomogeneousTransformationMatrix.from_xyz_rpy(
-            x=10, y=10, z=10
-        ),
-    )
-    all_elements_connections.append(root_C_banana)
 
     toya = Cylinder(width=0.45, height=1.5)
     shape_geometry = ShapeCollection([toya])
@@ -224,9 +122,9 @@ def test_load_world():
     )
     all_elements_connections.append(root_C_toya)
 
+
     with world.modify_world():
-        for annotation in all_elements_annotations:
-            world.add_semantic_annotation(annotation)
         for conn in all_elements_connections:
             world.add_connection(conn)
-        return world
+
+    return world

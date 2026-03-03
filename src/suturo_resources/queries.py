@@ -1,24 +1,22 @@
 import math
 from typing import List, Union, Optional
-from krrood.entity_query_language.entity import (
-    entity,
-    variable_from,
-)
-from krrood.entity_query_language.symbolic import QueryObjectDescriptor, Entity
+
+from krrood.entity_query_language.factories import variable_from, entity, flat_variable
+from krrood.entity_query_language.query.query import Entity
 from krrood.utils import inheritance_path_length
 from semantic_digital_twin.reasoning.predicates import (
     is_supported_by,
     compute_euclidean_distance_2d,
     is_supporting,
 )
-from semantic_digital_twin.semantic_annotations.mixins import HasSupportingSurface
+from semantic_digital_twin.semantic_annotations.mixins import HasSupportingSurface, IsPerceivable
 from semantic_digital_twin.world import World
+from semantic_digital_twin.world_description.geometry import Color
 
 from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
-
 
 def query_semantic_annotations_on_surfaces(
     supporting_surfaces: List[SemanticAnnotation], world: World
@@ -31,7 +29,7 @@ def query_semantic_annotations_on_surfaces(
     """
     supporting_surfaces_var = variable_from(supporting_surfaces)
     body_with_enabled_collision = variable_from(world.bodies_with_enabled_collision)
-    semantic_annotations = variable_from(
+    semantic_annotations = flat_variable(
         body_with_enabled_collision._semantic_annotations
     )
     semantic_annotations_that_are_supported = entity(semantic_annotations).where(
@@ -46,7 +44,7 @@ def query_semantic_annotations_on_surfaces(
 def query_get_next_object_euclidean_x_y(
     main_body: Body,
     supporting_surface,
-) -> QueryObjectDescriptor[SemanticAnnotation]:
+) -> Entity[SemanticAnnotation]:
     """
     Queries the next object based on Euclidean distance in x and y coordinates
     relative to the given main body and supporting surface. This function utilizes
@@ -62,7 +60,7 @@ def query_get_next_object_euclidean_x_y(
     supported_semantic_annotations = query_semantic_annotations_on_surfaces(
         [supporting_surface], main_body._world
     )
-    return supported_semantic_annotations.order_by(
+    return supported_semantic_annotations.ordered_by(
         compute_euclidean_distance_2d(
             body1=supported_semantic_annotations.selected_variable.bodies[0],
             body2=main_body,
@@ -125,3 +123,32 @@ def query_surface_of_most_similar_obj(
     for supporting_surface in supporting_surfaces:
         if is_supported_by(most_similar.bodies[0], supporting_surface.bodies[0]):
             return supporting_surface
+
+
+def query_annotations_by_color(color: Color, objects: list[SemanticAnnotation]) -> List[SemanticAnnotation]:
+    """
+    Queries and retrieves a list of annotations from another one that match
+    the specified color based on their visual properties.
+
+    :param color: The color to filter annotations by.
+    :param objects: The list of the unfiltered annotations.
+
+    :return: List[SemanticAnnotation]: A list of annotations from the world whose primary shape's
+    visual color matches the specified color.
+    """
+    all_bodies = []
+    for obj in objects:
+        all_bodies.append(obj.bodies[0])
+
+    filtered_bodies = []
+
+    for body in all_bodies:
+        if body.visual and body.collision is None:
+            continue
+        shapes = body.visual.shapes or body.collision.shapes
+        if shapes[0].color == color:
+            filtered_bodies.append(body)
+    filtered_annotations = []
+    for body in filtered_bodies:
+        filtered_annotations.append(list(body._semantic_annotations)[0])
+    return filtered_annotations
