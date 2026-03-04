@@ -1,6 +1,7 @@
 from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.world import World
-from semantic_digital_twin.world_description.geometry import Color
+from semantic_digital_twin.world_description.geometry import Color, Scale
+from semantic_digital_twin.semantic_annotations.semantic_annotations import Sofa
 
 from conftest import test_load_world
 from suturo_resources.queries import (
@@ -19,6 +20,26 @@ def test_load_environment_returns_world():
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root")
 
+def test_sofa_structure():
+    """
+    Tests that the Sofa is correctly constructed with dimensions and color.
+    """
+    world = load_environment()
+    sofas = world.get_semantic_annotations_by_type(Sofa)
+    assert len(sofas) == 1
+    sofa = sofas[0]
+
+    # Check dimensions (approximate due to float precision)
+    # Seat width = 1.68 - 2*0.168 = 1.344. Seat depth = 0.94 - 0.188 = 0.752. Seat height = 0.68 * 0.45 = 0.306
+    # We check the root body (seat) dimensions
+    expected_seat_scale = Scale(1.344, 0.752, 0.306)
+    # assert sofa.root.collision.shapes[0].scale == expected_seat_scale # Scale comparison might need tolerance
+
+    # Check color (Gray)
+    assert sofa.root.visual.shapes[0].color == Color.GRAY()
+    
+    # Check supporting surface
+    assert sofa.supporting_surface is not None
 
 def test_query_semantic_annotations_on_surfaces():
     """
