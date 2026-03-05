@@ -2,6 +2,7 @@ from semantic_digital_twin.datastructures.prefixed_name import PrefixedName
 from semantic_digital_twin.world import World
 from semantic_digital_twin.world_description.geometry import Color, Scale
 from semantic_digital_twin.semantic_annotations.semantic_annotations import Sofa
+import numpy as np
 
 from conftest import test_load_world
 from suturo_resources.queries import (
@@ -20,6 +21,7 @@ def test_load_environment_returns_world():
     assert isinstance(world, World)
     assert world.root.name == PrefixedName("root")
 
+
 def test_sofa_structure():
     """
     Tests that the Sofa is correctly constructed with dimensions and color.
@@ -29,15 +31,25 @@ def test_sofa_structure():
     assert len(sofas) == 1
     sofa = sofas[0]
 
-    # Check dimensions (approximate due to float precision)
-    # Seat width = 1.68 - 2*0.168 = 1.344. Seat depth = 0.94 - 0.188 = 0.752. Seat height = 0.68 * 0.45 = 0.306
-    # We check the root body (seat) dimensions
-    expected_seat_scale = Scale(1.344, 0.752, 0.306)
-    # assert sofa.root.collision.shapes[0].scale == expected_seat_scale # Scale comparison might need tolerance
+    # Check dimensions
+    # Since the sofa is now a single body with complex geometry (CSG),
+    # we check the bounding box of the entire object.
+    # The expected dimensions correspond to the parameters from the factory:
+    # length=1.68, width=0.94, height=0.68
+
+    # Calculate the bounding box of all shapes combined in the local frame
+    bbox = sofa.root.collision.as_bounding_box_collection_in_frame(sofa.root).bounding_box()
+
+    # Tolerance for floating point numbers (numpy is required: import numpy as np)
+    assert np.isclose(bbox.depth, 1.68, atol=1e-3)  # x-axis (length)
+    assert np.isclose(bbox.width, 0.94, atol=1e-3)  # y-axis (width)
+    assert np.isclose(bbox.height, 0.68, atol=1e-3)  # z-axis (height)
 
     # Check color (Gray)
+    # We check if shapes exist at all and if they have the correct color
+    assert len(sofa.root.visual.shapes) > 0
     assert sofa.root.visual.shapes[0].color == Color.GRAY()
-    
+
     # Check supporting surface
     assert sofa.supporting_surface is not None
 
