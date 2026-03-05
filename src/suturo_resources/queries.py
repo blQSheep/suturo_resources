@@ -9,7 +9,7 @@ from semantic_digital_twin.reasoning.predicates import (
     compute_euclidean_distance_2d,
     is_supporting,
 )
-from semantic_digital_twin.semantic_annotations.mixins import HasSupportingSurface
+from semantic_digital_twin.semantic_annotations.mixins import HasSupportingSurface, IsPerceivable
 from semantic_digital_twin.world import World
 from semantic_digital_twin.semantic_annotations.mixins import HasDestination
 
@@ -17,7 +17,6 @@ from semantic_digital_twin.world_description.world_entity import (
     Body,
     SemanticAnnotation,
 )
-
 
 def query_semantic_annotations_on_surfaces(
     supporting_surfaces: List[SemanticAnnotation], world: World
@@ -30,7 +29,7 @@ def query_semantic_annotations_on_surfaces(
     """
     supporting_surfaces_var = variable_from(supporting_surfaces)
     body_with_enabled_collision = variable_from(world.bodies_with_enabled_collision)
-    semantic_annotations = variable_from(
+    semantic_annotations = flat_variable(
         body_with_enabled_collision._semantic_annotations
     )
     semantic_annotations_that_are_supported = entity(semantic_annotations).where(
@@ -45,7 +44,7 @@ def query_semantic_annotations_on_surfaces(
 def query_get_next_object_euclidean_x_y(
     main_body: Body,
     supporting_surface,
-) -> QueryObjectDescriptor[SemanticAnnotation]:
+) -> Entity[SemanticAnnotation]:
     """
     Queries the next object based on Euclidean distance in x and y coordinates
     relative to the given main body and supporting surface. This function utilizes
@@ -61,7 +60,7 @@ def query_get_next_object_euclidean_x_y(
     supported_semantic_annotations = query_semantic_annotations_on_surfaces(
         [supporting_surface], main_body._world
     )
-    return supported_semantic_annotations.order_by(
+    return supported_semantic_annotations.ordered_by(
         compute_euclidean_distance_2d(
             body1=supported_semantic_annotations.selected_variable.bodies[0],
             body2=main_body,
