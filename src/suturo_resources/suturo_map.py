@@ -315,9 +315,6 @@ def build_environment_furniture(world: World):
         world.add_connection(cupboard_C_hinge_left)
         world.add_semantic_annotation(hinge_left)
 
-        # Open left door by setting the joint position
-        cupboard_C_hinge_left.position = np.pi / 2
-
         # Create left door
         door_left_geom = ShapeCollection([Box(scale=door_scale, color=Color.WHITE())])
         door_left_body = Body(
