@@ -1,10 +1,8 @@
 import math
 from typing import List, Union, Optional
-from krrood.entity_query_language.entity import (
-    entity,
-    variable_from,
-)
-from krrood.entity_query_language.symbolic import QueryObjectDescriptor, Entity
+from entity_query_language.symbolic import QueryObjectDescriptor
+from krrood.entity_query_language.factories import variable_from, entity
+from krrood.entity_query_language.query.query import Entity
 from krrood.utils import inheritance_path_length
 from semantic_digital_twin.reasoning.predicates import (
     is_supported_by,
@@ -120,8 +118,12 @@ def query_surface_of_most_similar_obj(
 
     # Apply threshold to determine if the match is acceptable
     if best_distance > threshold or most_similar is None:
-        return hand_annotation
-    return most_similar
+        return non_supporting_table
+
+    # Find the table supporting the most similar object
+    for supporting_surface in supporting_surfaces:
+        if is_supported_by(most_similar.bodies[0], supporting_surface.bodies[0]):
+            return supporting_surface
 
 def query_object_destination(world: World, obj: HasDestination) -> List[SemanticAnnotation]:
     """
@@ -135,12 +137,7 @@ def query_object_destination(world: World, obj: HasDestination) -> List[Semantic
     :return: A list of all destination semantic annotations found in the world.
              The list may be empty.
     """
-    # Try instance attribute first
-    dest_types = getattr(obj, "destination_class_names", None)
-
-    # Fall back to class attribute if instance has empty or None
-    if not dest_types:
-        dest_types = getattr(type(obj), "destination_class_names", None)
+    dest_types = obj.destination_class_names
 
     if not dest_types:
         return []
@@ -150,9 +147,3 @@ def query_object_destination(world: World, obj: HasDestination) -> List[Semantic
     for dest_type in dest_types:
         results.extend(world.get_semantic_annotations_by_type(dest_type))
     return results
-        return non_supporting_table
-
-    # Find the table supporting the most similar object
-    for supporting_surface in supporting_surfaces:
-        if is_supported_by(most_similar.bodies[0], supporting_surface.bodies[0]):
-            return supporting_surface
