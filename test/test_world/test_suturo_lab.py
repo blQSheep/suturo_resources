@@ -8,7 +8,9 @@ from suturo_resources.queries import (
     query_semantic_annotations_on_surfaces,
     query_get_next_object_euclidean_x_y, query_annotations_by_color,
 )
-from suturo_resources.suturo_map import load_environment
+#from suturo_resources.suturo_map import load_environment
+#from suturo_resources.apartment-map import load_environment
+
 
 
 def test_load_environment_returns_world():
